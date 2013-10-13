@@ -11,7 +11,6 @@
 
 #include "brick_mem.h"
 #include "brick_say.h"
-#include "brick_locks.h"
 #include "lamport.h"
 #include "buildtag.h"
 
@@ -552,9 +551,8 @@ static
 void *_get_free(int order, int cline)
 {
 	void *data;
-	unsigned long flags;
 
-	traced_lock(&freelist_lock[order], flags);
+	spin_lock(&freelist_lock[order]);
 	data = brick_freelist[order];
 	if (likely(data)) {
 		void *next = *(void**)data;
@@ -564,7 +562,7 @@ void *_get_free(int order, int cline)
 		if (unlikely(pattern != 0xf0f0f0f0f0f0f0f0 || next != copy)) { // found a corruption
 			// prevent further trouble by leaving a memleak
 			brick_freelist[order] = NULL;
-			traced_unlock(&freelist_lock[order], flags);
+			spin_unlock(&freelist_lock[order]);
 			BRICK_ERR("line %d:freelist corruption at %p (pattern = %lx next %p != %p, murdered = %d), order = %d\n",
 				  cline, data, pattern, next, copy, atomic_read(&freelist_count[order]), order);
 			return NULL;
@@ -573,7 +571,7 @@ void *_get_free(int order, int cline)
 		brick_freelist[order] = next;
 		atomic_dec(&freelist_count[order]);
 	}
-	traced_unlock(&freelist_lock[order], flags);
+	spin_unlock(&freelist_lock[order]);
 #ifdef CONFIG_MARS_DEBUG_MEM_STRONG
 	if (data) {
 		struct mem_block_info *inf = _find_block_info(data, false);
@@ -596,20 +594,19 @@ static
 void _put_free(void *data, int order)
 {
 	void *next;
-	unsigned long flags;
 
 #ifdef BRICK_DEBUG_MEM // fill with pattern
 	memset(data, 0xf0, PAGE_SIZE << order);
 #endif
 
-	traced_lock(&freelist_lock[order], flags);
+	spin_lock(&freelist_lock[order]);
 	next = brick_freelist[order];
 	*(void**)data = next;
 #ifdef BRICK_DEBUG_MEM // insert redundant copy for checking
 	*(((void**)data)+2) = next;
 #endif
 	brick_freelist[order] = data;
-	traced_unlock(&freelist_lock[order], flags);
+	spin_unlock(&freelist_lock[order]);
 	atomic_inc(&freelist_count[order]);
 }
 

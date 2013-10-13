@@ -2658,7 +2658,6 @@ void replay_endio(struct generic_callback *cb)
 	struct trans_logger_mref_aspect *mref_a = cb->cb_private;
 	struct trans_logger_brick *brick;
 	bool ok;
-	unsigned long flags;
 
 	LAST_CALLBACK(cb);
 	CHECK_PTR(mref_a, err);
@@ -2670,10 +2669,10 @@ void replay_endio(struct generic_callback *cb)
 		MARS_ERR("IO error = %d\n", cb->cb_error);
 	}
 
-	traced_lock(&brick->replay_lock, flags);
+	spin_lock(&brick->replay_lock);
 	ok = !list_empty(&mref_a->replay_head);
 	list_del_init(&mref_a->replay_head);
-	traced_unlock(&brick->replay_lock, flags);
+	spin_unlock(&brick->replay_lock);
 
 	if (likely(ok)) {
 		atomic_dec(&brick->replay_count);
@@ -2693,11 +2692,10 @@ bool _has_conflict(struct trans_logger_brick *brick, struct trans_logger_mref_as
 	struct mref_object *mref = mref_a->object;
 	struct list_head *tmp;
 	bool res = false;
-	unsigned long flags;
 
 	// NOTE: replacing this by rwlock_t will not gain anything, because there exists at most 1 reader at any time
 
-	traced_lock(&brick->replay_lock, flags);
+	spin_lock(&brick->replay_lock);
 
 	for (tmp = brick->replay_list.next; tmp != &brick->replay_list; tmp = tmp->next) {
 		struct trans_logger_mref_aspect *tmp_a;
@@ -2711,7 +2709,7 @@ bool _has_conflict(struct trans_logger_brick *brick, struct trans_logger_mref_as
 		}
 	}
 
-	traced_unlock(&brick->replay_lock, flags);
+	spin_unlock(&brick->replay_lock);
 	return res;
 }
 
@@ -2722,7 +2720,6 @@ void wait_replay(struct trans_logger_brick *brick, struct trans_logger_mref_aspe
 	int conflicts = 0;
 	bool ok = false;
 	bool was_empty;
-	unsigned long flags;
 
 	wait_event_interruptible_timeout(brick->worker_event,
 					 atomic_read(&brick->replay_count) < max
@@ -2733,7 +2730,7 @@ void wait_replay(struct trans_logger_brick *brick, struct trans_logger_mref_aspe
 	if (conflicts)
 		atomic_inc(&brick->total_replay_conflict_count);
 
-	traced_lock(&brick->replay_lock, flags);
+	spin_lock(&brick->replay_lock);
 	was_empty = !!list_empty(&mref_a->replay_head);
 	if (likely(was_empty)) {
 		atomic_inc(&brick->replay_count);
@@ -2741,7 +2738,7 @@ void wait_replay(struct trans_logger_brick *brick, struct trans_logger_mref_aspe
 		list_del(&mref_a->replay_head);
 	}
 	list_add(&mref_a->replay_head, &brick->replay_list);
-	traced_unlock(&brick->replay_lock, flags);
+	spin_unlock(&brick->replay_lock);
 
 	if (unlikely(!was_empty)) {
 		MARS_ERR("replay_head was already used (ok=%d, conflicts=%d, replay_count=%d)\n", ok, conflicts, atomic_read(&brick->replay_count));
