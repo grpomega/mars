@@ -156,9 +156,6 @@ int get_nr(void)
 
 	if (unlikely(!nr_table)) {
 		nr_table = brick_zmem_alloc(nr_max);
-		if (!nr_table) {
-			return 0;
-		}
 	}
 
 	for (;;) {
@@ -169,8 +166,6 @@ int get_nr(void)
 			}
 		}
 		new = brick_zmem_alloc(nr_max << 1);
-		if (!new)
-			return 0;
 		memcpy(new, nr_table, nr_max);
 		brick_mem_free(nr_table);
 		nr_table = new;
@@ -460,8 +455,6 @@ struct generic_object *generic_alloc(struct generic_brick *brick, struct generic
 	}
 
 	data = brick_zmem_alloc(total_size);
-	if (!data)
-		goto err;
 
 	atomic_inc(&object_layout->alloc_count);
 	atomic_inc(&object_layout->total_alloc_count);
@@ -572,9 +565,6 @@ struct generic_aspect *_new_aspect(struct generic_brick *brick, struct generic_o
 		}
 
 		res = brick_zmem_alloc(size);
-		if (unlikely(!res)) {
-			goto done;
-		}
 		atomic_inc(&object_layout->aspect_count);
 		atomic_inc(&object_layout->total_aspect_count);
 	}
@@ -718,9 +708,6 @@ EXPORT_SYMBOL_GPL(free_meta);
 int __init init_brick(void)
 {
 	nr_table = brick_zmem_alloc(nr_max);
-	if (!nr_table) {
-		return -ENOMEM;
-	}
 	return 0;
 }
 
