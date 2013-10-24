@@ -3717,6 +3717,7 @@ int make_dev(void *buf, struct mars_dent *dent)
 	struct mars_rotate *rot = NULL;
 	struct mars_brick *dev_brick;
 	struct if_brick *_dev_brick;
+	char *dev_name = NULL;
 	bool switch_on;
 	int open_count = 0;
 	int status = 0;
@@ -3751,6 +3752,8 @@ int make_dev(void *buf, struct mars_dent *dent)
 		goto done;
 	}
 
+	dev_name = path_make("mars/%s", dent->d_argv[0]);
+
 	switch_on =
 		(rot->if_brick && atomic_read(&rot->if_brick->open_count) > 0) ||
 		(rot->todo_primary &&
@@ -3770,7 +3773,7 @@ int make_dev(void *buf, struct mars_dent *dent)
 			       dent,
 			       _set_if_params,
 			       rot,
-			       dent->d_argv[0],
+			       dev_name,
 			       (const struct generic_brick_type*)&if_brick_type,
 			       (const struct generic_brick_type*[]){(const struct generic_brick_type*)&trans_logger_brick_type},
 			       switch_on ? 2 : -1,
@@ -3802,6 +3805,7 @@ done:
 	_show_primary(rot, parent);
 
 err:
+	brick_string_free(dev_name);
 	return status;
 }
 
