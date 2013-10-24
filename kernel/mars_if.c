@@ -37,6 +37,10 @@
 #include "mars.h"
 #include "lib_limiter.h"
 
+#ifndef XIO_MAJOR // remove this later: fallback to old prepatch
+#define XIO_MAJOR MARS_MAJOR
+#endif
+
 //      remove_this
 #ifdef bio_end_sector
 #define HAS_VOID_RELEASE
@@ -738,7 +742,7 @@ static int if_switch(struct if_brick *brick)
 		set_disk_ro(disk, true);
 
 		disk->queue = q;
-		disk->major = MARS_MAJOR; //TODO: make this dynamic for >256 devices
+		disk->major = XIO_MAJOR; //TODO: make this dynamic for >256 devices
 		disk->first_minor = minor;
 		disk->fops = &if_blkdev_ops;
 		snprintf(disk->disk_name, sizeof(disk->disk_name),  "mars/%s", brick->brick_name);
@@ -1135,7 +1139,7 @@ void exit_mars_if(void)
 	int status;
 	MARS_INF("exit_if()\n");
 	status = if_unregister_brick_type();
-	unregister_blkdev(MARS_MAJOR, "mars");
+	unregister_blkdev(XIO_MAJOR, "xio");
 }
 
 int __init init_mars_if(void)
@@ -1145,7 +1149,7 @@ int __init init_mars_if(void)
 	(void)if_aspect_types; // not used, shut up gcc
 
 	MARS_INF("init_if()\n");
-	status = register_blkdev(MARS_MAJOR, "mars");
+	status = register_blkdev(XIO_MAJOR, "xio");
 	if (status)
 		return status;
 	status = if_register_brick_type();
