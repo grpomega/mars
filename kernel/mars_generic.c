@@ -196,12 +196,3 @@ void exit_mars(void)
 		id = NULL;
 	}
 }
-
-#ifndef CONFIG_MARS_HAVE_BIGMODULE
-MODULE_DESCRIPTION("MARS block storage");
-MODULE_AUTHOR("Thomas Schoebel-Theuer <tst@1und1.de>");
-MODULE_LICENSE("GPL");
-
-module_init(init_mars);
-module_exit(exit_mars);
-#endif
