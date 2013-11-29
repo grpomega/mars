@@ -61,7 +61,6 @@ extern char *my_id(void);
 	int   d_serial;   /* for pre-grouping order */			\
 	int   d_version;  /* dynamic programming per call of mars_ent_work() */ \
 	int   d_child_count;						\
-	char d_once_error;						\
 	bool d_killme;							\
 	bool d_use_channel;						\
 	struct kstat new_stat;						\
@@ -149,8 +148,6 @@ extern struct mars_brick *make_brick_all(
 	);
 
 // general MARS infrastructure
-
-#define MARS_ERR_ONCE(dent, args...) if (!dent->d_once_error++) MARS_ERR(args)
 
 /* General fs wrappers (for abstraction)
  */
