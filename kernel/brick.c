@@ -632,7 +632,6 @@ void set_button(struct generic_switch *sw, bool val, bool force)
 		val = false;
 	if (val != oldval) {
 		sw->button = val;
-		//sw->trigger = true;
 		wake_up_interruptible(&sw->event);
 	}
 }
@@ -643,7 +642,6 @@ void set_led_on(struct generic_switch *sw, bool val)
 	bool oldval = sw->led_on;
 	if (val != oldval) {
 		sw->led_on = val;
-		//sw->trigger = true;
 		wake_up_interruptible(&sw->event);
 	}
 }
@@ -654,7 +652,6 @@ void set_led_off(struct generic_switch *sw, bool val)
 	bool oldval = sw->led_off;
 	if (val != oldval) {
 		sw->led_off = val;
-		//sw->trigger = true;
 		wake_up_interruptible(&sw->event);
 	}
 }
