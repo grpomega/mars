@@ -1,13 +1,11 @@
 // (c) 2010 Thomas Schoebel-Theuer / 1&1 Internet AG
 
-// Buf brick
-
 /* FIXME: this code has been unused for a long time, it is unlikly
  * to work at all.
  */
 
-//#define BRICK_DEBUGGING
-//#define MARS_DEBUGGING
+// #define BRICK_DEBUGGING
+// #define MARS_DEBUGGING
 
 #include <linux/kernel.h>
 #include <linux/module.h>
@@ -17,11 +15,11 @@
 
 #include "mars.h"
 
-//#define FAKE_IO // only for testing
-//#define FAKE_READS // only for testing
-//#define FAKE_WRITES // only for testing
+// #define FAKE_IO // only for testing
+// #define FAKE_READS // only for testing
+// #define FAKE_WRITES // only for testing
 
-//#define OPTIMIZE_FULL_WRITES // does not work currently!
+// #define OPTIMIZE_FULL_WRITES // does not work currently!
 
 ///////////////////////// own type definitions ////////////////////////
 
@@ -351,7 +349,7 @@ bool _mref_remove(struct buf_head *bf, struct buf_mref_aspect *mref_a)
 
 
 
-/////////////////////////////////////////////////////////////7
+/////////////////////////////////////////////////////////////
 
 
 static inline int _get_info(struct buf_brick *brick)
@@ -878,7 +876,7 @@ static void buf_ref_io(struct buf_output *output, struct mref_object *mref)
 #if 0
 			// by definition, a writeout buffer is always uptodate
 			bf->bf_flags |= (MREF_WRITING | MREF_UPTODATE);
-#else // wirklich???
+#else // really ???
 			bf->bf_flags |= MREF_WRITING;
 #endif
 			bf->bf_error = 0;
