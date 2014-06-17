@@ -46,6 +46,7 @@ mars-objs += 				\
 	mars_usebuf.o			\
 
 endif
+## remove_this
 
 #
 # buildtag.h should be regenerated in every build. If a file
@@ -89,3 +90,5 @@ $(obj)/mars_config.h: $(src)/Kconfig $(GEN_CONFIG_SCRIPT)
 	fi; \
 	cat $< | $(GEN_CONFIG_SCRIPT) > $@;
 endif
+
+## end_remove_this

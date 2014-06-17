@@ -22,7 +22,9 @@
 #include <linux/blkdev.h>
 
 #include "strategy.h"
+//      remove_this
 #include "../buildtag.h"
+//      end_remove_this
 
 #include <linux/wait.h>
 
@@ -5138,7 +5140,10 @@ static int __init init_light(void)
 	if (min_free_kbytes < new_limit)
 		min_free_kbytes = new_limit;
 	
+//      remove_this
 	printk(KERN_INFO "loading MARS, BUILDTAG=%s BUILDHOST=%s BUILDDATE=%s\n", BUILDTAG, BUILDHOST, BUILDDATE);
+//else	printk(KERN_INFO "loading MARS, tree_version=%s\n", SYMLINK_TREE_VERSION);
+//      end_remove_this
 
 	init_say(); // this must come first
 
@@ -5202,7 +5207,10 @@ const void *dummy2 = &server_brick_type;
 
 MODULE_DESCRIPTION("MARS Light");
 MODULE_AUTHOR("Thomas Schoebel-Theuer <tst@1und1.de>");
+//      remove_this
 MODULE_VERSION(BUILDTAG " (" BUILDHOST " " BUILDDATE ")");
+//elseMODULE_VERSION(SYMLINK_TREE_VERSION);
+//      end_remove_this
 MODULE_LICENSE("GPL");
 
 #ifndef CONFIG_MARS_DEBUG

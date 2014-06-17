@@ -21,6 +21,7 @@
 #include "../mars_server.h"
 #include "../mars_trans_logger.h"
 
+//      remove_this
 #include "../buildtag.h"
 
 const char mars_version_string[] = BUILDTAG " (" BUILDHOST " " BUILDDATE ") "
@@ -37,6 +38,7 @@ const char mars_version_string[] = BUILDTAG " (" BUILDHOST " " BUILDDATE ") "
 #endif
 	;
 
+//      end_remove_this
 mars_info_fn mars_info = NULL;
 
 static
@@ -230,6 +232,7 @@ ctl_table tcp_tuning_table[] = {
 
 static
 ctl_table mars_table[] = {
+//      remove_this
 	{
 		_CTL_NAME
 		.procname	= "version",
@@ -238,6 +241,7 @@ ctl_table mars_table[] = {
 		.mode		= 0400,
 		.proc_handler	= &proc_dostring,
 	},
+//      end_remove_this
 	{
 		_CTL_NAME
 		.procname	= "trigger",
