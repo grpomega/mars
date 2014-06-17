@@ -5,6 +5,8 @@
 #include <linux/semaphore.h>
 #include <linux/rwsem.h>
 
+//      remove_this
+
 // check the Kconfig environment
 
 #ifndef CONFIG_MARS_MODULE
@@ -34,7 +36,7 @@
 #error Fixme: CONFIG_DEBUG_SG does not work (fix the bio offset calculation)
 #endif
 
-
+//      end_remove_this
 /////////////////////////////////////////////////////////////////////////
 
 // include the generic brick infrastructure
