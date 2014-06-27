@@ -142,11 +142,10 @@ static inline
 void _enqueue(struct aio_threadinfo *tinfo, struct aio_mref_aspect *mref_a, int prio, bool at_end)
 {
 	prio++;
-	if (unlikely(prio < 0)) {
+	if (unlikely(prio < 0))
 		prio = 0;
-	} else if (unlikely(prio >= MARS_PRIO_NR)) {
+	else if (unlikely(prio >= MARS_PRIO_NR))
 		prio = MARS_PRIO_NR - 1;
-	}
 
 	mref_a->enqueue_stamp = cpu_clock(raw_smp_processor_id());
 
@@ -295,8 +294,10 @@ static void aio_ref_put(struct aio_output *output, struct mref_object *mref)
 		goto done;
 	}
 
-	if (output->mf && (file = output->mf->mf_filp) && file->f_mapping && file->f_mapping->host) {
-		mref->ref_total_size = get_total_size(output);
+	if (likely(output->mf)) {
+		file = output->mf->mf_filp;
+		if (likely(file && file->f_mapping && file->f_mapping->host))
+			mref->ref_total_size = get_total_size(output);
 	}
 
 	mref_a = aio_mref_get_aspect(output->brick, mref);
@@ -441,13 +442,12 @@ static int aio_submit(struct aio_output *output, struct aio_mref_aspect *mref_a,
 
 	atomic_inc(&output->total_submit_count);
 
-	if (likely(res >= 0)) {
+	if (likely(res >= 0))
 		atomic_inc(&output->submit_count);
-	} else if (likely(res == -EAGAIN)) {
+	else if (likely(res == -EAGAIN))
 		atomic_inc(&output->total_again_count);
-	} else {
+	else
 		MARS_ERR("error = %d\n", res);
-	}
 
 done:
 	return res;
@@ -478,7 +478,7 @@ static
 int aio_start_thread(
 	struct aio_output *output,
 	struct aio_threadinfo *tinfo,
-	int(*fn)(void*),
+	int (*fn)(void *),
 	char class)
 {
 	int j;
@@ -675,13 +675,13 @@ static int aio_event_thread(void *data)
 		}
 
 		for (i = 0; i < count; i++) {
-			struct aio_mref_aspect *mref_a = (void*)events[i].data;
+			struct aio_mref_aspect *mref_a = (void *)events[i].data;
 			struct mref_object *mref;
 			int err = events[i].res;
 
-			if (!mref_a) {
+			if (!mref_a)
 				continue; // this was a dummy request
-			}
+
 			mref_a->di.dirty_stage = 2;
 			mref = mref_a->object;
 
@@ -763,7 +763,7 @@ void _destroy_ioctx(struct aio_output *output)
 		mm_segment_t oldfs;
 		int err;
 
-		MARS_DBG("ioctx count = %d destroying %p\n", atomic_read(&ioctx_count), (void*)output->ctxp);
+		MARS_DBG("ioctx count = %d destroying %p\n", atomic_read(&ioctx_count), (void *)output->ctxp);
 		oldfs = get_fs();
 		set_fs(get_ds());
 		err = sys_io_destroy(output->ctxp);
@@ -820,7 +820,7 @@ int _create_ioctx(struct aio_output *output)
 		goto done;
 	}
 
-	MARS_DBG("ioctx count = %d old = %p\n", atomic_read(&ioctx_count), (void*)output->ctxp);
+	MARS_DBG("ioctx count = %d old = %p\n", atomic_read(&ioctx_count), (void *)output->ctxp);
 	output->ctxp = 0;
 
 	oldfs = get_fs();
@@ -829,7 +829,7 @@ int _create_ioctx(struct aio_output *output)
 	set_fs(oldfs);
 	if (likely(output->ctxp))
 		atomic_inc(&ioctx_count);
-	MARS_DBG("ioctx count = %d new = %p status = %d\n", atomic_read(&ioctx_count), (void*)output->ctxp, err);
+	MARS_DBG("ioctx count = %d new = %p status = %d\n", atomic_read(&ioctx_count), (void *)output->ctxp, err);
 	if (unlikely(err < 0)) {
 		MARS_ERR("io_setup failed, err=%d\n", err);
 		goto done;
@@ -953,11 +953,10 @@ static int aio_get_info(struct aio_output *output, struct mars_info *info)
 {
 	struct file *file;
 
-	if (unlikely(!output ||
-		     !output->mf ||
-		     !(file = output->mf->mf_filp) ||
-		     !file->f_mapping ||
-		     !file->f_mapping->host))
+	if (unlikely(!output || !output->mf))
+		return -EINVAL;
+	file = output->mf->mf_filp;
+	if (unlikely(!file || !file->f_mapping || !file->f_mapping->host))
 		return -EINVAL;
 
 	info->tf_align = 1;
@@ -1061,7 +1060,7 @@ void aio_reset_statistics(struct aio_brick *brick)
 
 static int aio_mref_aspect_init_fn(struct generic_aspect *_ini)
 {
-	struct aio_mref_aspect *ini = (void*)_ini;
+	struct aio_mref_aspect *ini = (void *)_ini;
 	INIT_LIST_HEAD(&ini->io_head);
 	INIT_LIST_HEAD(&ini->di.dirty_head);
 	ini->di.dirty_mref = ini->object;
@@ -1070,7 +1069,7 @@ static int aio_mref_aspect_init_fn(struct generic_aspect *_ini)
 
 static void aio_mref_aspect_exit_fn(struct generic_aspect *_ini)
 {
-	struct aio_mref_aspect *ini = (void*)_ini;
+	struct aio_mref_aspect *ini = (void *)_ini;
 	CHECK_HEAD_EMPTY(&ini->di.dirty_head);
 	CHECK_HEAD_EMPTY(&ini->io_head);
 }
@@ -1099,7 +1098,7 @@ static int aio_switch(struct aio_brick *brick)
 	if (brick->power.led_on || output->mf)
 		goto done;
 
-	mars_power_led_off((void*)brick, false);
+	mars_power_led_off((void *)brick, false);
 
 	if (brick->o_creat) {
 		flags |= O_CREAT;
@@ -1132,7 +1131,7 @@ static int aio_switch(struct aio_brick *brick)
 	}
 
 	MARS_DBG("opened file '%s'\n", path);
-	mars_power_led_on((void*)brick, true);
+	mars_power_led_on((void *)brick, true);
 
 done:
 	return 0;
@@ -1144,13 +1143,13 @@ cleanup:
 		goto done;
 	}
 
-	mars_power_led_on((void*)brick, false);
+	mars_power_led_on((void *)brick, false);
 
 	aio_stop_thread(output, 0, false);
 
 	_destroy_ioctx(output);
 
-	mars_power_led_off((void*)brick,
+	mars_power_led_off((void *)brick,
 			  (output->tinfo[0].thread == NULL &&
 			   output->tinfo[1].thread == NULL &&
 			   output->tinfo[2].thread == NULL));
@@ -1235,7 +1234,7 @@ EXPORT_SYMBOL_GPL(aio_brick_type);
 int __init init_mars_aio(void)
 {
 	MARS_DBG("init_aio()\n");
-	_aio_brick_type = (void*)&aio_brick_type;
+	_aio_brick_type = (void *)&aio_brick_type;
 	set_fake();
 	return aio_register_brick_type();
 }
