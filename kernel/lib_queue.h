@@ -45,7 +45,7 @@ void q_##PREFIX##_init(struct PREFIX##_queue *q)			\
 }									\
 									\
 static inline							        \
-void q_##PREFIX##_insert(struct PREFIX##_queue *q, ELEM_TYPE *elem)	\
+void q_##PREFIX##_insert(struct PREFIX##_queue *q, ELEM_TYPE * elem)	\
 {									\
 	spin_lock(&q->q_lock);						\
 									\
@@ -68,7 +68,7 @@ void q_##PREFIX##_insert(struct PREFIX##_queue *q, ELEM_TYPE *elem)	\
 }									\
 									\
 static inline							        \
-void q_##PREFIX##_pushback(struct PREFIX##_queue *q, ELEM_TYPE *elem)	\
+void q_##PREFIX##_pushback(struct PREFIX##_queue *q, ELEM_TYPE * elem)	\
 {									\
 	if (q->q_ordering) {						\
 		atomic_dec(&q->q_total);				\
