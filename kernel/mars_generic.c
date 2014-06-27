@@ -12,7 +12,6 @@
 #include <linux/utsname.h>
 
 #include "mars.h"
-#include "mars_client.h"
 
 //////////////////////////////////////////////////////////////
 
@@ -104,6 +103,7 @@ EXPORT_SYMBOL_GPL(mars_timespec_meta);
 
 // crypto stuff
 
+#include <linux/scatterlist.h>
 #include <linux/crypto.h>
 
 static struct crypto_hash *mars_tfm = NULL;
