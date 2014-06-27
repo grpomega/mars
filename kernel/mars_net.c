@@ -78,7 +78,7 @@ static const bool myself_is_bigendian = false;
 static const bool myself_is_bigendian = true;
 #endif
 
-extern inline
+static inline
 void swap_bytes(void *data, int len)
 {
 	char *a = data;
@@ -95,7 +95,7 @@ void swap_bytes(void *data, int len)
 
 #define SWAP_FIELD(x) swap_bytes(&(x), sizeof(x))
 
-extern inline
+static inline
 void swap_mc(struct mars_desc_cache *mc, int len)
 {
 	struct mars_desc_item *mi;
@@ -106,7 +106,7 @@ void swap_mc(struct mars_desc_cache *mc, int len)
 
 	len -= sizeof(*mc);
 
-	for (mi = (void*)(mc + 1); len > 0; mi++, len -= sizeof(*mi)) {
+	for (mi = (void *)(mc + 1); len > 0; mi++, len -= sizeof(*mi)) {
 		SWAP_FIELD(mi->field_type);
 		SWAP_FIELD(mi->field_data_size);
 		SWAP_FIELD(mi->field_sender_size);
@@ -116,13 +116,13 @@ void swap_mc(struct mars_desc_cache *mc, int len)
 	}
 }
 
-extern inline
+static inline
 char get_sign(const void *data, int len, bool is_bigendian, bool is_signed)
 {
 	if (is_signed) {
 		char x = is_bigendian ?
-			((const char*)data)[0] :
-			((const char*)data)[len - 1];
+			((const char *)data)[0] :
+			((const char *)data)[len - 1];
 		if (x < 0)
 			return -1;
 	}
@@ -162,15 +162,15 @@ void __setsockopt(struct socket *sock, int level, int optname, char *optval, int
 	int status = kernel_setsockopt(sock, level, optname, optval, optsize);
 	if (status < 0) {
 		MARS_WRN("cannot set %d socket option %d to value %d, status = %d\n",
-			 level, optname, *(int*)optval, status);
+			 level, optname, *(int *)optval, status);
 	}
 }
 
-#define _setsockopt(sock,level,optname,val) __setsockopt(sock, level, optname, (char*)&(val), sizeof(val))
+#define _setsockopt(sock,level,optname,val) __setsockopt(sock, level, optname, (char *)&(val), sizeof(val))
 
 int mars_create_sockaddr(struct sockaddr_storage *addr, const char *spec)
 {
-	struct sockaddr_in *sockaddr = (void*)addr;
+	struct sockaddr_in *sockaddr = (void *)addr;
 	const char *new_spec;
 	const char *tmp_spec;
 	int status = 0;
@@ -286,7 +286,7 @@ done:
 int mars_create_socket(struct mars_socket *msock, struct sockaddr_storage *addr, bool is_server)
 {
 	struct socket *sock;
-	struct sockaddr *sockaddr = (void*)addr;
+	struct sockaddr *sockaddr = (void *)addr;
 	int status = -EEXIST;
 
 	if (unlikely(atomic_read(&msock->s_count))) {
@@ -477,11 +477,11 @@ int _mars_send_raw(struct mars_socket *msock, const void *buf, int len)
 
 		{
 			struct kvec iov = {
-				.iov_base = (void*)buf,
+				.iov_base = (void *)buf,
 				.iov_len  = this_len,
 			};
 			struct msghdr msg = {
-				.msg_iov = (struct iovec*)&iov,
+				.msg_iov = (struct iovec *)&iov,
 				.msg_flags = 0 | MSG_NOSIGNAL,
 			};
 			status = kernel_sendmsg(sock, &msg, &iov, 1, this_len);
@@ -615,7 +615,7 @@ int mars_recv_raw(struct mars_socket *msock, void *buf, int minlen, int maxlen)
 		};
 		struct msghdr msg = {
 			.msg_iovlen = 1,
-			.msg_iov = (struct iovec*)&iov,
+			.msg_iov = (struct iovec *)&iov,
 			.msg_flags = MSG_NOSIGNAL,
 		};
 		struct socket *sock = msock->s_socket;
@@ -773,7 +773,7 @@ struct mars_desc_cache *make_sender_cache(struct mars_socket *msock, const struc
 	mc->cache_recver_proto = msock->s_recv_proto;
 
 	maxlen -= sizeof(struct mars_desc_cache);
-	mi = (void*)(mc + 1);
+	mi = (void *)(mc + 1);
 
 	status = _add_fields(mi, meta, 0, "", maxlen);
 
@@ -800,7 +800,7 @@ void _make_recver_cache(struct mars_desc_cache *mc, const struct meta *meta, int
 	for (; meta->field_name != NULL; meta++) {
 		snprintf(tmp, MAX_FIELD_LEN, "%s.%s", prefix, meta->field_name);
 		for (i = 0; i < mc->cache_items; i++) {
-			struct mars_desc_item *mi = ((struct mars_desc_item*)(mc + 1)) + i;
+			struct mars_desc_item *mi = ((struct mars_desc_item *)(mc + 1)) + i;
 			if (meta->field_type == mi->field_type &&
 			    !strcmp(tmp, mi->field_name)) {
 				mi->field_recver_size = meta->field_data_size;
@@ -825,7 +825,7 @@ void make_recver_cache(struct mars_desc_cache *mc, const struct meta *meta)
 	_make_recver_cache(mc, meta, 0, "");
 
 	for (i = 0; i < mc->cache_items; i++) {
-		struct mars_desc_item *mi = ((struct mars_desc_item*)(mc + 1)) + i;
+		struct mars_desc_item *mi = ((struct mars_desc_item *)(mc + 1)) + i;
 		if (unlikely(mi->field_recver_offset < 0)) {
 			MARS_WRN("field '%s' is not transferred\n", mi->field_name);
 		}
@@ -833,15 +833,17 @@ void make_recver_cache(struct mars_desc_cache *mc, const struct meta *meta)
 }
 
 #define _CHECK_STATUS(_txt_)					\
+do {								\
 	if (unlikely(status < 0)) {				\
 		MARS_DBG("%s status = %d\n", _txt_, status);	\
 		goto err;					\
-	}
+	}							\
+} while (0)
 
 static
 int _desc_send_item(struct mars_socket *msock, const void *data, const struct mars_desc_cache *mc, int index, bool cork)
 {
-	struct mars_desc_item *mi = ((struct mars_desc_item*)(mc + 1)) + index;
+	struct mars_desc_item *mi = ((struct mars_desc_item *)(mc + 1)) + index;
 	const void *item = data + mi->field_sender_offset;
 	s16 data_len = mi->field_data_size;
 	s16 transfer_len = mi->field_sender_size;
@@ -910,7 +912,7 @@ int _desc_send_item(struct mars_socket *msock, const void *data, const struct ma
 				MARS_ERR("cannot sign-reduce signed integer from %d to %d bytes, byte %d !~ %d\n",
 					 data_len,
 					 transfer_len,
-					 ((char*)item)[transfer_len - 1],
+					 ((char *)item)[transfer_len - 1],
 					 check);
 				goto err;
 			}
@@ -924,13 +926,13 @@ int _desc_send_item(struct mars_socket *msock, const void *data, const struct ma
 			}
 
 			for (i = start; i < end; i++) {
-				if (unlikely(((char*)item)[i] != check)) {
+				if (unlikely(((char *)item)[i] != check)) {
 					MARS_ERR("cannot sign-reduce %ssigned integer from %d to %d bytes at pos %d, byte %d != %d\n",
 						 is_signed ? "" : "un",
 						 data_len,
 						 transfer_len,
 						 i,
-						 ((char*)item)[i],
+						 ((char *)item)[i],
 						 check);
 					goto err;
 				}
@@ -944,7 +946,7 @@ int _desc_send_item(struct mars_socket *msock, const void *data, const struct ma
 			goto raw;
 		}		
 	case FIELD_STRING:
-		item = *(void**)item;
+		item = *(void **)item;
 		data_len = 0;
 		if (item)
 			data_len = strlen(item) + 1;
@@ -972,7 +974,7 @@ err:
 static
 int _desc_recv_item(struct mars_socket *msock, void *data, const struct mars_desc_cache *mc, int index, int line)
 {
-	struct mars_desc_item *mi = ((struct mars_desc_item*)(mc + 1)) + index;
+	struct mars_desc_item *mi = ((struct mars_desc_item *)(mc + 1)) + index;
 	void *item = NULL;
 	s16 data_len = mi->field_recver_size;
 	s16 transfer_len = mi->field_sender_size;
@@ -1051,7 +1053,7 @@ int _desc_recv_item(struct mars_socket *msock, void *data, const struct mars_des
 					 mi->field_name, 
 					 transfer_len,
 					 data_len,
-					 ((char*)item)[data_len - 1],
+					 ((char *)item)[data_len - 1],
 					 check);
 				goto err;
 			}
@@ -1101,7 +1103,7 @@ int _desc_recv_item(struct mars_socket *msock, void *data, const struct mars_des
 
 		if (data_len > 0 && item) {
 			char *str = _brick_string_alloc(data_len, line);
-			*(void**)item = str;
+			*(void **)item = str;
 			item = str;
 		}
 
