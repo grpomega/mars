@@ -105,6 +105,7 @@ extern const struct generic_object_type mref_type;
 	int    ref_rw;							\
 	int    ref_id; /* not mandatory; may be used for identification */ \
 	bool   ref_skip_sync; /* skip sync for this particular mref */	\
+	/* this comment is for keeping TRAILING_SEMICOLON happy */
 
 struct mref_object {
 	MREF_OBJECT(mref);
@@ -132,6 +133,7 @@ struct mars_info {
 	int kill_round;							\
 	bool killme;							\
 	void (*show_status)(struct mars_brick *brick, bool shutdown);	\
+	/* this comment is for keeping TRAILING_SEMICOLON happy */
 
 struct mars_brick {
 	MARS_BRICK(mars);
@@ -139,6 +141,7 @@ struct mars_brick {
 
 #define MARS_INPUT(BRITYPE)						\
 	GENERIC_INPUT(BRITYPE);						\
+	/* this comment is for keeping TRAILING_SEMICOLON happy */
 
 struct mars_input {
 	MARS_INPUT(mars);
@@ -146,6 +149,7 @@ struct mars_input {
 
 #define MARS_OUTPUT(BRITYPE)						\
 	GENERIC_OUTPUT(BRITYPE);					\
+	/* this comment is for keeping TRAILING_SEMICOLON happy */
 
 struct mars_output {
 	MARS_OUTPUT(mars);
@@ -155,6 +159,7 @@ struct mars_output {
 	GENERIC_BRICK_OPS(BRITYPE);					\
 	char *(*brick_statistics)(struct BRITYPE##_brick *brick, int verbose); \
 	void (*reset_statistics)(struct BRITYPE##_brick *brick);	\
+	/* this comment is for keeping TRAILING_SEMICOLON happy */
 	
 #define MARS_OUTPUT_OPS(BRITYPE)					\
 	GENERIC_OUTPUT_OPS(BRITYPE);					\
@@ -163,6 +168,7 @@ struct mars_output {
 	int  (*mref_get)(struct BRITYPE##_output *output, struct mref_object *mref); \
 	void (*mref_io)(struct BRITYPE##_output *output, struct mref_object *mref); \
 	void (*mref_put)(struct BRITYPE##_output *output, struct mref_object *mref); \
+	/* this comment is for keeping TRAILING_SEMICOLON happy */
 
 // all non-extendable types
 
@@ -193,6 +199,7 @@ struct BRITYPE##_callback {					        \
 };									\
 									\
 DECLARE_BRICK_FUNCTIONS(BRITYPE);				        \
+/* this comment is for keeping TRAILING_SEMICOLON happy */
 
 
 #define MARS_TYPES(BRITYPE)						\
@@ -201,7 +208,8 @@ _MARS_TYPES(BRITYPE)						        \
 									\
 DECLARE_ASPECT_FUNCTIONS(BRITYPE,mref);					\
 extern int init_mars_##BRITYPE(void);					\
-extern void exit_mars_##BRITYPE(void);
+extern void exit_mars_##BRITYPE(void);					\
+/* this comment is for keeping TRAILING_SEMICOLON happy */
 
 
 // instantiate pseudo base-classes
@@ -231,6 +239,7 @@ static const struct generic_aspect_type BRITYPE##_mref_aspect_type = {  \
 static const struct generic_aspect_type *BRITYPE##_aspect_types[OBJ_TYPE_MAX] = {	\
 	[OBJ_TYPE_MREF] = &BRITYPE##_mref_aspect_type,			\
 };									\
+/* this comment is for keeping TRAILING_SEMICOLON happy */
 
 extern const struct meta mars_info_meta[];
 extern const struct meta mars_mref_meta[];
