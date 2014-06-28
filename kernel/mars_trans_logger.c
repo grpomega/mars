@@ -20,7 +20,13 @@
 // variants
 #define KEEP_UNIQUE
 #define DELAY_CALLERS // this is _needed_ for production systems
-#define SHORTCUT_1_to_3 // when possible, queue 1 executes phase3_startio() directly without intermediate queueing into queue 3 => may be irritating, but has better performance. NOTICE: when some day the IO scheduling should be different between queue 1 and 3, you MUST disable this in order to distinguish between them!
+/* When possible, queue 1 executes phase3_startio() directly without
+ * intermediate queueing into queue 3 => may be irritating, but has better
+ * performance. NOTICE: when some day the IO scheduling should be
+ * different between queue 1 and 3, you MUST disable this in order
+ * to distinguish between them!
+ */
+#define SHORTCUT_1_to_3
 
 // commenting this out is dangerous for data integrity! use only for testing!
 #define USE_MEMCPY
@@ -50,7 +56,7 @@ struct trans_logger_hash_anchor {
 
 #define NR_HASH_PAGES       64
 
-#define MAX_HASH_PAGES      (PAGE_SIZE / sizeof(struct trans_logger_hash_anchor*))
+#define MAX_HASH_PAGES      (PAGE_SIZE / sizeof(struct trans_logger_hash_anchor *))
 #define HASH_PER_PAGE       (PAGE_SIZE / sizeof(struct trans_logger_hash_anchor))
 #define HASH_TOTAL          (NR_HASH_PAGES * HASH_PER_PAGE)
 
@@ -285,9 +291,8 @@ struct trans_logger_mref_aspect *_hash_find(struct list_head *start, loff_t pos,
 		_mref_check(test);
 
 		// are the regions overlapping?
-		if (pos >= test->ref_pos + test->ref_len || pos + len <= test->ref_pos) {
+		if (pos >= test->ref_pos + test->ref_len || pos + len <= test->ref_pos)
 			continue; // not relevant
-		}
 		
 		// searching for unstable elements (only in special cases)
 		if (find_unstable && test_a->is_stable)
@@ -311,7 +316,7 @@ struct trans_logger_mref_aspect *_hash_find(struct list_head *start, loff_t pos,
 	return res;
 }
 
-static noinline
+static
 struct trans_logger_mref_aspect *hash_find(struct trans_logger_brick *brick, loff_t pos, int *max_len, bool find_unstable)
 {
 	
@@ -336,7 +341,7 @@ struct trans_logger_mref_aspect *hash_find(struct trans_logger_brick *brick, lof
 	return res;
 }
 
-static noinline
+static
 void hash_insert(struct trans_logger_brick *brick, struct trans_logger_mref_aspect *elem_a)
 {
         int hash = hash_fn(elem_a->object->ref_pos);
@@ -361,7 +366,7 @@ void hash_insert(struct trans_logger_brick *brick, struct trans_logger_mref_aspe
 /* Find the transitive closure of overlapping requests
  * and collect them into a list.
  */
-static noinline
+static
 void hash_extend(struct trans_logger_brick *brick, loff_t *_pos, int *_len, struct list_head *collect_list)
 {
 	loff_t pos = *_pos;
@@ -394,9 +399,8 @@ void hash_extend(struct trans_logger_brick *brick, loff_t *_pos, int *_len, stru
 			_mref_check(test);
 
 			// are the regions overlapping?
-			if (pos >= test->ref_pos + test->ref_len || pos + len <= test->ref_pos) {
+			if (pos >= test->ref_pos + test->ref_len || pos + len <= test->ref_pos)
 				continue; // not relevant
-			}
 
 			// collision detection
 			if (test_a->is_collected)
@@ -432,9 +436,8 @@ void hash_extend(struct trans_logger_brick *brick, loff_t *_pos, int *_len, stru
 		test = test_a->object;
 		
 		// are the regions overlapping?
-		if (pos >= test->ref_pos + test->ref_len || pos + len <= test->ref_pos) {
+		if (pos >= test->ref_pos + test->ref_len || pos + len <= test->ref_pos)
 			continue; // not relevant
-		}
 		
 		// collect
 		CHECK_HEAD_EMPTY(&test_a->collect_head);
@@ -551,14 +554,14 @@ EXPORT_SYMBOL_GPL(global_mshadow_count);
 atomic64_t global_mshadow_used  = ATOMIC64_INIT(0);
 EXPORT_SYMBOL_GPL(global_mshadow_used);
 
-static noinline
+static
 int trans_logger_get_info(struct trans_logger_output *output, struct mars_info *info)
 {
 	struct trans_logger_input *input = output->brick->inputs[TL_INPUT_READ];
 	return GENERIC_INPUT_CALL(input, mars_get_info, info);
 }
 
-static noinline
+static
 int _make_sshadow(struct trans_logger_output *output, struct trans_logger_mref_aspect *mref_a, struct trans_logger_mref_aspect *mshadow_a)
 {
 	struct trans_logger_brick *brick = output->brick;
@@ -618,7 +621,7 @@ int _make_sshadow(struct trans_logger_output *output, struct trans_logger_mref_a
 	return mref->ref_len;
 }
 
-static noinline
+static
 int _read_ref_get(struct trans_logger_output *output, struct trans_logger_mref_aspect *mref_a)
 {
 	struct trans_logger_brick *brick = output->brick;
@@ -638,7 +641,7 @@ int _read_ref_get(struct trans_logger_output *output, struct trans_logger_mref_a
 	return _make_sshadow(output, mref_a, mshadow_a);
 }	
 
-static noinline
+static
 int _write_ref_get(struct trans_logger_output *output, struct trans_logger_mref_aspect *mref_a)
 {
 	struct trans_logger_brick *brick = output->brick;
@@ -698,7 +701,7 @@ int _write_ref_get(struct trans_logger_output *output, struct trans_logger_mref_
 	return mref->ref_len;
 }
 
-static noinline
+static
 int trans_logger_ref_get(struct trans_logger_output *output, struct mref_object *mref)
 {
 	struct trans_logger_brick *brick;
@@ -762,10 +765,9 @@ err:
 	return -EINVAL;
 }
 
-static noinline
-void pos_complete(struct trans_logger_mref_aspect *orig_mref_a);
+static void pos_complete(struct trans_logger_mref_aspect *orig_mref_a);
 
-static noinline
+static
 void __trans_logger_ref_put(struct trans_logger_brick *brick, struct trans_logger_mref_aspect *mref_a)
 {
 	struct mref_object *mref;
@@ -791,8 +793,8 @@ restart:
 		finished = _mref_put(mref);
 		atomic_dec(&brick->inner_balance_count);
 		if (unlikely(finished && mref_a->is_hashed)) {
-			   MARS_ERR("trying to put a hashed mref, pos = %lld len = %d\n", mref->ref_pos, mref->ref_len);
-			   finished = false; // leaves a memleak
+			MARS_ERR("trying to put a hashed mref, pos = %lld len = %d\n", mref->ref_pos, mref->ref_len);
+			finished = false; // leaves a memleak
 		}
 
 		if (!finished) {
@@ -853,7 +855,7 @@ restart:
 err: ;
 }
 
-static noinline
+static
 void _trans_logger_ref_put(struct trans_logger_output *output, struct mref_object *mref)
 {
 	struct trans_logger_mref_aspect *mref_a;
@@ -869,7 +871,7 @@ err:
 	MARS_FAT("giving up...\n");
 }
 
-static noinline
+static
 void trans_logger_ref_put(struct trans_logger_output *output, struct mref_object *mref)
 {
 	struct trans_logger_brick *brick = output->brick;
@@ -877,7 +879,7 @@ void trans_logger_ref_put(struct trans_logger_output *output, struct mref_object
 	_trans_logger_ref_put(output, mref);
 }
 
-static noinline
+static
 void _trans_logger_endio(struct generic_callback *cb)
 {
 	struct trans_logger_mref_aspect *mref_a;
@@ -903,7 +905,7 @@ err:
 	MARS_FAT("cannot handle callback\n");
 }
 
-static noinline
+static
 void trans_logger_ref_io(struct trans_logger_output *output, struct mref_object *mref)
 {
 	struct trans_logger_brick *brick = output->brick;
@@ -962,7 +964,7 @@ err:
 
 /* save final completion status when necessary
  */
-static noinline
+static
 void pos_complete(struct trans_logger_mref_aspect *orig_mref_a)
 {
 	struct trans_logger_brick *brick = orig_mref_a->my_brick;
@@ -1011,7 +1013,7 @@ void pos_complete(struct trans_logger_mref_aspect *orig_mref_a)
 err:;
 }
 
-static noinline
+static
 void free_writeback(struct writeback_info *wb)
 {
 	struct list_head *tmp;
@@ -1047,15 +1049,17 @@ void free_writeback(struct writeback_info *wb)
 
 /* Generic endio() for writeback_info
  */
-static noinline
+static
 void wb_endio(struct generic_callback *cb)
 {
 	struct trans_logger_mref_aspect *sub_mref_a;
 	struct mref_object *sub_mref;
 	struct trans_logger_brick *brick;
 	struct writeback_info *wb;
-	int rw;
 	atomic_t *dec;
+	int rw;
+	/* make checkpatch.pl happy with a blank line - is this a false positive? */
+
 	void (**_endio)(struct generic_callback *cb);
 	void (*endio)(struct generic_callback *cb);
 
@@ -1105,7 +1109,7 @@ err:
  * struct writeback_info to precisely catch that information at a single
  * point in time.
  */
-static noinline
+static
 struct writeback_info *make_writeback(struct trans_logger_brick *brick, loff_t pos, int len)
 {
 	struct writeback_info *wb;
@@ -1355,7 +1359,7 @@ void update_max_pos(struct trans_logger_mref_aspect *orig_mref_a)
 }
 
 static inline
-void update_writeback_info(struct writeback_info * wb)
+void update_writeback_info(struct writeback_info *wb)
 {
 	struct list_head *start = &wb->w_collect_list;
 	struct list_head *tmp;
@@ -1376,7 +1380,7 @@ void update_writeback_info(struct writeback_info * wb)
  * Phase 0: write transaction log entry for the original write request.
  */
 
-static noinline
+static
 void _complete(struct trans_logger_brick *brick, struct trans_logger_mref_aspect *orig_mref_a, int error, bool pre_io)
 {
 	struct mref_object *orig_mref;
@@ -1410,7 +1414,7 @@ err:
 	MARS_ERR("giving up...\n");
 }
 
-static noinline
+static
 void phase0_preio(void *private)
 {
 	struct trans_logger_mref_aspect *orig_mref_a;
@@ -1432,7 +1436,7 @@ err:
 	MARS_ERR("giving up...\n");
 }
 
-static noinline
+static
 void phase0_endio(void *private, int error)
 {
 	struct mref_object *orig_mref;
@@ -1475,7 +1479,7 @@ err:
 	MARS_ERR("giving up...\n");
 }
 
-static noinline
+static
 bool phase0_startio(struct trans_logger_mref_aspect *orig_mref_a)
 {
 	struct mref_object *orig_mref;
@@ -1552,7 +1556,7 @@ err:
 	return false;
 }
 
-static noinline
+static
 bool prep_phase_startio(struct trans_logger_mref_aspect *mref_a)
 {
 	struct mref_object *mref = mref_a->object;
@@ -1640,7 +1644,7 @@ err:
  * old version from disk somewhen later, e.g. when IO contention is low.
  */
 
-static noinline
+static
 void phase1_endio(struct generic_callback *cb)
 {
 	struct trans_logger_mref_aspect *sub_mref_a;
@@ -1673,12 +1677,11 @@ err:
 	MARS_FAT("hanging up....\n");
 }
 
-static noinline
-void phase3_endio(struct generic_callback *cb);
-static noinline
-bool phase3_startio(struct writeback_info *wb);
+static void phase3_endio(struct generic_callback *cb);
 
-static noinline
+static bool phase3_startio(struct writeback_info *wb);
+
+static
 bool phase1_startio(struct trans_logger_mref_aspect *orig_mref_a)
 {
 	struct mref_object *orig_mref;
@@ -1751,7 +1754,7 @@ void _phase2_endio(struct writeback_info *wb)
 	return;
 }
 
-static noinline
+static
 void phase2_endio(void *private, int error)
 {
 	struct trans_logger_mref_aspect *sub_mref_a;
@@ -1783,7 +1786,7 @@ err:
 	MARS_FAT("hanging up....\n");
 }
 
-static noinline
+static
 bool _phase2_startio(struct trans_logger_mref_aspect *sub_mref_a)
 {
 	struct mref_object *sub_mref = NULL;
@@ -1836,7 +1839,7 @@ err:
 	return false;
 }
 
-static noinline
+static
 bool phase2_startio(struct writeback_info *wb)
 {
 	struct trans_logger_brick *brick;
@@ -1875,7 +1878,7 @@ err:
  * Phase 3: overwrite old disk version with new version.
  */
 
-static noinline
+static
 void phase3_endio(struct generic_callback *cb)
 {
 	struct trans_logger_mref_aspect *sub_mref_a;
@@ -1913,7 +1916,7 @@ err:
 }
 
 
-static noinline
+static
 bool phase3_startio(struct writeback_info *wb)
 {
 	struct list_head *start = &wb->w_sub_read_list;
@@ -1949,7 +1952,7 @@ bool phase3_startio(struct writeback_info *wb)
  * There is only a single instance, dealing with all requests in parallel.
  */
 
-static noinline
+static
 int run_mref_queue(struct logger_queue *q, bool (*startio)(struct trans_logger_mref_aspect *sub_mref_a), int max, bool do_limit)
 {
 	struct trans_logger_brick *brick = q->q_brick;
@@ -1985,7 +1988,7 @@ done:
 	return res;
 }
 
-static noinline
+static
 int run_wb_queue(struct logger_queue *q, bool (*startio)(struct writeback_info *wb), int max)
 {
 	struct trans_logger_brick *brick = q->q_brick;
@@ -2129,7 +2132,7 @@ struct rank_info global_rank_mref_flying[] = {
 	{ RKI_DUMMY }
 };
 
-static noinline
+static
 int _do_ranking(struct trans_logger_brick *brick, struct rank_data rkd[])
 {
 	int res;
@@ -2208,7 +2211,8 @@ int _do_ranking(struct trans_logger_brick *brick, struct rank_data rkd[])
 				break;
 			}
 
-			if ((leader = elect_leader(&global_writeback)) != brick) {
+			leader = elect_leader(&global_writeback);
+			if (leader != brick) {
 				break;
 			}
 
@@ -2243,7 +2247,7 @@ void _init_input(struct trans_logger_input *input, loff_t start_pos, loff_t end_
 	struct trans_logger_brick *brick = input->brick;
 	struct log_status *logst = &input->logst;
 
-	init_logst(logst, (void*)input, start_pos, end_pos);
+	init_logst(logst, (void *)input, start_pos, end_pos);
 	logst->signal_event = &brick->worker_event;
 	logst->align_size = CONF_TRANS_ALIGN;
 	logst->chunk_size = CONF_TRANS_CHUNKSIZE;
@@ -2406,12 +2410,11 @@ void flush_inputs(struct trans_logger_brick *brick, int flush_mode)
 	      atomic_read(&brick->log_fly_count) > 0 ||
 	     // else flush any leftovers in background, when there is no writeback activity
 	      (flush_mode == 3 &&
-	       atomic_read(&brick->q_phase[1].q_flying) + atomic_read(&brick->q_phase[3].q_flying) <= 0)))) {
+	       atomic_read(&brick->q_phase[1].q_flying) + atomic_read(&brick->q_phase[3].q_flying) <= 0))))
 		_flush_inputs(brick);
-	}
 }
 
-static noinline
+static
 void trans_logger_log(struct trans_logger_brick *brick)
 {
 	struct rank_data rkd[LOGGER_QUEUES] = {};
@@ -2425,7 +2428,7 @@ void trans_logger_log(struct trans_logger_brick *brick)
 
 	_init_inputs(brick, true);
 
-	mars_power_led_on((void*)brick, true);
+	mars_power_led_on((void *)brick, true);
 
 	while (!brick_thread_should_stop() || _congested(brick)) {
 		int winner;
@@ -2448,11 +2451,10 @@ void trans_logger_log(struct trans_logger_brick *brick)
 
 		atomic_inc(&brick->total_round_count);
 
-		if (brick->cease_logging) {
+		if (brick->cease_logging)
 			brick->stopped_logging = true;
-		} else if (brick->stopped_logging && !_congested(brick)) {
+		else if (brick->stopped_logging && !_congested(brick))
 			brick->stopped_logging = false;
-		}
 
 		_init_inputs(brick, false);
 
@@ -2494,7 +2496,7 @@ void trans_logger_log(struct trans_logger_brick *brick)
 			break;
 
 		default:
-			;
+			break;
 		}
 
 		/* Update symlinks even during pauses.
@@ -2525,7 +2527,7 @@ void trans_logger_log(struct trans_logger_brick *brick)
 
 ////////////////////////////// log replay //////////////////////////////
 
-static noinline
+static
 void replay_endio(struct generic_callback *cb)
 {
 	struct trans_logger_mref_aspect *mref_a = cb->cb_private;
@@ -2559,7 +2561,7 @@ void replay_endio(struct generic_callback *cb)
 	MARS_FAT("cannot handle replay IO\n");
 }
 
-static noinline
+static
 bool _has_conflict(struct trans_logger_brick *brick, struct trans_logger_mref_aspect *mref_a)
 {
 	struct mref_object *mref = mref_a->object;
@@ -2586,7 +2588,7 @@ bool _has_conflict(struct trans_logger_brick *brick, struct trans_logger_mref_as
 	return res;
 }
 
-static noinline
+static
 void wait_replay(struct trans_logger_brick *brick, struct trans_logger_mref_aspect *mref_a)
 {
 	const int max = 512; // limit parallelism somewhat
@@ -2618,7 +2620,7 @@ void wait_replay(struct trans_logger_brick *brick, struct trans_logger_mref_aspe
 	}
 }
 
-static noinline
+static
 int replay_data(struct trans_logger_brick *brick, loff_t pos, void *buf, int len)
 {
 	struct trans_logger_input *input = brick->inputs[TL_INPUT_WRITEBACK];
@@ -2695,7 +2697,7 @@ int replay_data(struct trans_logger_brick *brick, loff_t pos, void *buf, int len
 	return status;
 }
 
-static noinline
+static
 void trans_logger_replay(struct trans_logger_brick *brick)
 {
 	struct trans_logger_input *input = brick->inputs[brick->log_input_nr];
@@ -2726,7 +2728,7 @@ void trans_logger_replay(struct trans_logger_brick *brick)
 
 	MARS_INF("starting replay from %lld to %lld\n", start_pos, end_pos);
 	
-	mars_power_led_on((void*)brick, true);
+	mars_power_led_on((void *)brick, true);
 
 	for (;;) {
 		void *buf = NULL;
@@ -2787,6 +2789,7 @@ void trans_logger_replay(struct trans_logger_brick *brick)
 		}
 
 		if (lh.l_code != CODE_WRITE_NEW) {
+			/* ignore other records silently */;
 		} else if (unlikely(brick->disk_io_error)) {
 			status = brick->disk_io_error;
 			brick->replay_code = status;
@@ -2884,7 +2887,7 @@ void trans_logger_replay(struct trans_logger_brick *brick)
 
 ///////////////////////// logger thread / switching /////////////////////////
 
-static noinline
+static
 int trans_logger_thread(void *data)
 {
 	struct trans_logger_output *output = data;
@@ -2899,12 +2902,12 @@ int trans_logger_thread(void *data)
 	}
 
 	MARS_INF("........... logger has stopped.\n");
-	mars_power_led_on((void*)brick, false);
-	mars_power_led_off((void*)brick, true);
+	mars_power_led_on((void *)brick, false);
+	mars_power_led_off((void *)brick, true);
 	return 0;
 }
 
-static noinline
+static
 int trans_logger_switch(struct trans_logger_brick *brick)
 {
 	static int index = 0;
@@ -2912,7 +2915,7 @@ int trans_logger_switch(struct trans_logger_brick *brick)
 
 	if (brick->power.button) {
 		if (!brick->thread && brick->power.led_off) {
-			mars_power_led_off((void*)brick, false);
+			mars_power_led_off((void *)brick, false);
 
 			brick->thread = brick_thread_create(trans_logger_thread, output, "mars_logger%d", index++);
 			if (unlikely(!brick->thread)) {
@@ -2921,7 +2924,7 @@ int trans_logger_switch(struct trans_logger_brick *brick)
 			}
 		}
 	} else {
-		mars_power_led_on((void*)brick, false);
+		mars_power_led_on((void *)brick, false);
 		if (brick->thread) {
 			MARS_INF("stopping thread...\n");
 			brick_thread_stop(brick->thread);
@@ -2933,7 +2936,7 @@ int trans_logger_switch(struct trans_logger_brick *brick)
 
 //////////////// informational / statistics ///////////////
 
-static noinline
+static
 char *trans_logger_statistics(struct trans_logger_brick *brick, int verbose)
 {
 	char *res = brick_string_alloc(1024);
@@ -3080,7 +3083,7 @@ char *trans_logger_statistics(struct trans_logger_brick *brick, int verbose)
 	return res;
 }
 
-static noinline
+static
 void trans_logger_reset_statistics(struct trans_logger_brick *brick)
 {
 	atomic_set(&brick->total_hash_insert_count, 0);
@@ -3107,10 +3110,10 @@ void trans_logger_reset_statistics(struct trans_logger_brick *brick)
 
 //////////////// object / aspect constructors / destructors ///////////////
 
-static noinline
+static
 int trans_logger_mref_aspect_init_fn(struct generic_aspect *_ini)
 {
-	struct trans_logger_mref_aspect *ini = (void*)_ini;
+	struct trans_logger_mref_aspect *ini = (void *)_ini;
 	ini->lh.lh_pos = &ini->object->ref_pos;
 	INIT_LIST_HEAD(&ini->lh.lh_head);
 	INIT_LIST_HEAD(&ini->hash_head);
@@ -3122,10 +3125,10 @@ int trans_logger_mref_aspect_init_fn(struct generic_aspect *_ini)
 	return 0;
 }
 
-static noinline
+static
 void trans_logger_mref_aspect_exit_fn(struct generic_aspect *_ini)
 {
-	struct trans_logger_mref_aspect *ini = (void*)_ini;
+	struct trans_logger_mref_aspect *ini = (void *)_ini;
 	CHECK_HEAD_EMPTY(&ini->lh.lh_head);
 	CHECK_HEAD_EMPTY(&ini->hash_head);
 	CHECK_HEAD_EMPTY(&ini->pos_head);
@@ -3162,7 +3165,7 @@ void _free_pages(struct trans_logger_brick *brick)
 	brick_block_free(brick->hash_table, PAGE_SIZE);
 }
 
-static noinline
+static
 int trans_logger_brick_construct(struct trans_logger_brick *brick)
 {
 	int i;
@@ -3221,7 +3224,7 @@ int trans_logger_brick_construct(struct trans_logger_brick *brick)
 	return 0;
 }
 
-static noinline
+static
 int trans_logger_brick_destruct(struct trans_logger_brick *brick)
 {
 	_free_pages(brick);
@@ -3230,13 +3233,13 @@ int trans_logger_brick_destruct(struct trans_logger_brick *brick)
 	return 0;
 }
 
-static noinline
+static
 int trans_logger_output_construct(struct trans_logger_output *output)
 {
 	return 0;
 }
 
-static noinline
+static
 int trans_logger_input_construct(struct trans_logger_input *input)
 {
 	INIT_LIST_HEAD(&input->pos_list);
@@ -3244,7 +3247,7 @@ int trans_logger_input_construct(struct trans_logger_input *input)
 	return 0;
 }
 
-static noinline
+static
 int trans_logger_input_destruct(struct trans_logger_input *input)
 {
 	CHECK_HEAD_EMPTY(&input->pos_list);

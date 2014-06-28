@@ -43,7 +43,7 @@ extern struct writeback_group global_writeback;
 
 ////////////////////////////////////////////////////////////////////
 
-_PAIRING_HEAP_TYPEDEF(logger,)
+_PAIRING_HEAP_TYPEDEF(logger, /*empty*/)
 
 struct logger_queue {
 	QUEUE_ANCHOR(logger,loff_t,logger);
@@ -82,6 +82,8 @@ struct writeback_info {
 	atomic_t w_sub_read_count;
 	atomic_t w_sub_write_count;
 	atomic_t w_sub_log_count;
+	/* make checkpatch.pl happy with a blank line - is this a false positive? */
+
 	void (*read_endio)(struct generic_callback *cb);
 	void (*write_endio)(struct generic_callback *cb);
 };
