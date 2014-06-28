@@ -5164,6 +5164,10 @@ static void exit_light(void)
 	}
 	MARS_DBG("====================== stopped everything.\n");
 	exit_say();
+	/* checkpatch.pl: dev_info() and friends cannot be used
+	 * because MARS handles many devices dynamically at runtime.
+	 * At secondary nodes, no device may be present at all.
+	 */
 	printk(KERN_INFO "stopped MARS\n");
 	/* Workaround for nasty race: some kernel threads have not yet
 	 * really finished even _after_ kthread_stop() and may execute
@@ -5184,6 +5188,9 @@ static int __init init_light(void)
 	if (min_free_kbytes < new_limit)
 		min_free_kbytes = new_limit;
 	
+	/* checkpatch.pl: dev_info() and friends cannot be used
+	 * (see also the above sister comment)
+	 */
 //      remove_this
 	printk(KERN_INFO "loading MARS, BUILDTAG=%s BUILDHOST=%s BUILDDATE=%s\n", BUILDTAG, BUILDHOST, BUILDDATE);
 //else	printk(KERN_INFO "loading MARS, tree_version=%s\n", SYMLINK_TREE_VERSION);
