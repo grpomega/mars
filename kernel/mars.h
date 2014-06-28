@@ -216,6 +216,7 @@ DECLARE_ASPECT_FUNCTIONS(mars,mref);
 
 #define MARS_MAKE_STATICS(BRITYPE)					\
 									\
+/* checkpatch.pl: the EXPORT_SYMBOL warning appears to be false positive */\
 int BRITYPE##_brick_nr = -EEXIST;				        \
 EXPORT_SYMBOL_GPL(BRITYPE##_brick_nr);			                \
 									\
