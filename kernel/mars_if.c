@@ -594,9 +594,7 @@ if_make_request(struct request_queue *q, struct bio *bio)
 err:
 	if (error < 0) {
 		MARS_ERR("cannot submit request from bio, status=%d\n", error);
-		if (assigned) {
-			//... cleanup the mess NYI
-		} else {
+		if (!assigned) {
 			bio_endio(bio, error);
 		}
 	}
@@ -720,7 +718,7 @@ static int if_switch(struct if_brick *brick)
 	if (brick->power.button && brick->power.led_off) {
 		loff_t capacity;
 
-		mars_power_led_off((void*)brick,  false);
+		mars_power_led_off((void *)brick,  false);
 		brick->say_channel = get_binding(current);
 
 		status = -ENOMEM;
@@ -824,7 +822,7 @@ static int if_switch(struct if_brick *brick)
 		set_disk_ro(disk, false);
 
 		// report success
-		mars_power_led_on((void*)brick, true);
+		mars_power_led_on((void *)brick, true);
 		status = 0;
 	}
 
@@ -832,7 +830,7 @@ static int if_switch(struct if_brick *brick)
 	if (!brick->power.button && !brick->power.led_off) {
 		int flying;
 
-		mars_power_led_on((void*)brick, false);
+		mars_power_led_on((void *)brick, false);
 		disk = input->disk;
 		if (!disk)
 			goto is_down;
@@ -860,7 +858,7 @@ static int if_switch(struct if_brick *brick)
 		input->disk = NULL;
 		status = 0;
 	is_down:
-		mars_power_led_off((void*)brick, true);
+		mars_power_led_off((void *)brick, true);
 	}
 
 done:
@@ -1009,7 +1007,7 @@ void if_reset_statistics(struct if_brick *brick)
 
 static int if_mref_aspect_init_fn(struct generic_aspect *_ini)
 {
-	struct if_mref_aspect *ini = (void*)_ini;
+	struct if_mref_aspect *ini = (void *)_ini;
 	INIT_LIST_HEAD(&ini->plug_head);
 	INIT_LIST_HEAD(&ini->hash_head);
 	return 0;
@@ -1017,7 +1015,7 @@ static int if_mref_aspect_init_fn(struct generic_aspect *_ini)
 
 static void if_mref_aspect_exit_fn(struct generic_aspect *_ini)
 {
-	struct if_mref_aspect *ini = (void*)_ini;
+	struct if_mref_aspect *ini = (void *)_ini;
 	CHECK_HEAD_EMPTY(&ini->plug_head);
 	CHECK_HEAD_EMPTY(&ini->hash_head);
 }
