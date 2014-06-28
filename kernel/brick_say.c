@@ -632,6 +632,22 @@ void reset_flood(void)
 	}
 }
 
+/* checkpatch.pl PREFER_PR_LEVEL:
+ *
+ * This is intended as _the_ _one_ subsystem-specific place where
+ * subsystem-specific {BRICK,MARS}_{INF,WRN,ERR,...}() functions are
+ * mapped to the ordinary kernel printk().
+ *
+ * As noted elsewhere, dev_info() and friends connot be used in MARS_Light,
+ * because /dev/mars/ devices are created dynamically at runtime.
+ * On secondaries, no /dev/mars/ devices may exist at all.
+ *
+ * In case you want different naming conventions such als
+ * brick_err_printk() or similar, this could be automatically converted
+ * via the ./rework-mars-for-upstream.pl script.
+ * IMHO, the current naming conventions are short, systematic, and
+ * intuitive, so I personally would keep them in their current form.
+ */
 static
 void printk_with_class(int class, char *buf)
 {
