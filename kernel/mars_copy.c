@@ -322,7 +322,7 @@ static
 void _update_percent(struct copy_brick *brick)
 {
 	if (brick->copy_last > brick->copy_start + 8 * 1024 * 1024
-	   || (long long)jiffies > brick->last_jiffies + 5 * HZ
+	   || time_is_before_jiffies(brick->last_jiffies + 5 * HZ)
 	   || (brick->copy_last == brick->copy_end && brick->copy_end > 0)) {
 		brick->copy_start = brick->copy_last;
 		brick->last_jiffies = jiffies;
