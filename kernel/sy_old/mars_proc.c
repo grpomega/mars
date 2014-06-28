@@ -43,7 +43,7 @@ mars_info_fn mars_info = NULL;
 
 static
 int trigger_sysctl_handler(
-	ctl_table *table,
+	ctl_table * table, /* checkpatch.pl insists on a space after "*" */
 	int write, 
 	void __user *buffer,
 	size_t *length,
@@ -60,14 +60,16 @@ int trigger_sysctl_handler(
 
 	if (write) {
 		char tmp[8] = {};
-		int code = 0;
 
 		res = len; // fake consumption of all data
 
 		if (len > 7)
 			len = 7;
 		if (!copy_from_user(tmp, buffer, len)) {
-			sscanf(tmp, "%d", &code);
+			int code = 0;
+			int status = sscanf(tmp, "%d", &code);
+			/* the return value from ssanf() does not matter */
+			(void)status;
 			if (code > 0) {
 				mars_trigger();
 			}
@@ -110,7 +112,7 @@ done:
 
 static
 int lamport_sysctl_handler(
-	ctl_table *table,
+	ctl_table * table, /* checkpatch.pl insists on a space after "*" */
 	int write, 
 	void __user *buffer,
 	size_t *length,
@@ -181,6 +183,12 @@ done:
 #define INT_ENTRY(NAME,VAR,MODE)			\
 	VEC_ENTRY(NAME, VAR, MODE, 1)
 
+/* checkpatch.pl: no, these complex values cannot be easily enclosed
+ * in parentheses. If { ... } were used inside the macro body, it would
+ * no longer be possible to add additional fields externally.
+ * I could inject further fields externally via parameters, but
+ * that would make it less understandable.
+ */
 #define LIMITER_ENTRIES(VAR, PREFIX, SUFFIX)				\
 	INT_ENTRY(PREFIX "_ratelimit_" SUFFIX, (VAR)->lim_max_rate, 0600), \
 	INT_ENTRY(PREFIX "_maxdelay_ms",   (VAR)->lim_max_delay,0600),	\
