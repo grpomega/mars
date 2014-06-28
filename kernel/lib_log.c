@@ -61,6 +61,8 @@ struct log_cb_info {
 	struct semaphore mutex;
 	atomic_t refcount;
 	int nr_cb;
+	/* make checkpatch.pl happy with a blank line - is this a false positive? */
+
 	void (*endios[MARS_LOG_CB_MAX])(void *private, int error);
 	void *privates[MARS_LOG_CB_MAX];
 };
