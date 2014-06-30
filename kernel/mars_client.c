@@ -151,7 +151,6 @@ static int client_get_info(struct client_output *output, struct mars_info *info)
 		status = 0;
 	}
 
-//done:
 	return status;
 }
 
@@ -530,11 +529,10 @@ static int sender_thread(void *data)
 			continue;
 		}
 	}
-//done:
+
 	if (status < 0) {
 		MARS_WRN("sender thread terminated with status = %d\n", status);
 	}
-
 	if (do_kill) {
 		_kill_socket(output);
 	}
