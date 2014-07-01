@@ -591,11 +591,7 @@ char *client_statistics(struct client_brick *brick, int verbose)
 	char *res = brick_string_alloc(1024);
 
 	snprintf(res, 1024,
-		 "#%d socket "
-		 "max_flying = %d "
-		 "io_timeout = %d | "
-		 "timeout_count = %d "
-		 "fly_count = %d\n",
+		 "#%d socket max_flying = %d io_timeout = %d | timeout_count = %d fly_count = %d\n",
 		 output->socket.s_debug_nr,
 		 brick->max_flying,
 		 brick->io_timeout,
