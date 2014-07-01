@@ -46,7 +46,7 @@ void mapfree_pages(struct mapfree_info *mf, int grace_keep)
 	} else {
 		loff_t tmp;
 		loff_t min;
-		
+
 		spin_lock(&mf->mf_lock);
 
 		min = tmp = mf->mf_min[0];
@@ -125,7 +125,7 @@ struct mapfree_info *mapfree_get(const char *name, int flags)
 			}
 		}
 		up_read(&mapfree_mutex);
-	
+
 		if (mf)
 			goto done;
 	}
@@ -233,7 +233,7 @@ int mapfree_thread(void *data)
 
 		if (mapfree_period_sec <= 0)
 			continue;
-		
+
 		down_read(&mapfree_mutex);
 
 		for (tmp = mapfree_list.next; tmp != &mapfree_list; tmp = tmp->next) {

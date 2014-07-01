@@ -33,7 +33,7 @@ struct buf_brick {
 	int backing_size;
 	int max_count;
 	bool optimize_chains;
-	
+
 	/* internals */
 	spinlock_t brick_lock;
 	atomic_t alloc_count;

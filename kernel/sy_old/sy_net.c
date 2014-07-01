@@ -87,9 +87,7 @@ done:
 }
 EXPORT_SYMBOL_GPL(mars_recv_dent_list);
 
-
 ////////////////// module init stuff /////////////////////////
-
 
 int __init init_sy_net(void)
 {

@@ -4,7 +4,6 @@
 #include <linux/module.h>
 #include <linux/string.h>
 
-
 #include "brick_say.h"
 #include "lamport.h"
 
@@ -266,7 +265,7 @@ void del_channel(struct say_channel *ch)
 		say_to(default_channel, SAY_ERROR, "thread '%s' tried to delete the default channel\n", current->comm);
 		goto out_return;
 	}
-	
+
 	ch->ch_delete = true;
 out_return:;
 }
@@ -494,7 +493,7 @@ void say_to(struct say_channel *ch, int class, const char *fmt, ...)
 		class = SAY_TOTAL;
 		wait_channel(ch, class);
 		spin_lock_irqsave(&ch->ch_lock[class], flags);
-		
+
 		va_start(args, fmt);
 		_say(ch, class, args, false, fmt);
 		va_end(args);
@@ -532,7 +531,7 @@ void brick_say_to(struct say_channel *ch, int class, bool dump, const char *pref
 	filelen = strlen(file);
 	if (filelen > MAX_FILELEN)
 		file += filelen - MAX_FILELEN;
-	
+
 	if (likely(ch)) {
 		channel_name = ch->ch_name;
 		if (!ch->ch_is_dir)
@@ -540,7 +539,7 @@ void brick_say_to(struct say_channel *ch, int class, bool dump, const char *pref
 		if (likely(class >= 0 && class < MAX_SAY_CLASS)) {
 			wait_channel(ch, class);
 			spin_lock_irqsave(&ch->ch_lock[class], flags);
-			
+
 			_say(ch, class, NULL, true,
 			     "%ld.%09ld %ld.%09ld %s %s[%d] %s:%d %s(): ",
 			     s_now.tv_sec, s_now.tv_nsec,
@@ -553,7 +552,7 @@ void brick_say_to(struct say_channel *ch, int class, bool dump, const char *pref
 			va_start(args, fmt);
 			_say(ch, class, args, false, fmt);
 			va_end(args);
-			
+
 			spin_unlock_irqrestore(&ch->ch_lock[class], flags);
 		}
 	}
@@ -721,24 +720,24 @@ void _rollover_channel(struct say_channel *ch)
 	for (class = start; class < MAX_SAY_CLASS; class++) {
 		char *old = _make_filename(ch, class, 1, 1);
 		char *new = _make_filename(ch, class, 1, 0);
-		
+
 		if (likely(old && new)) {
 			int i;
 			mm_segment_t oldfs;
-			
+
 			for (i = 0; i < 2; i++) {
 				if (ch->ch_filp[class][i]) {
 					filp_close(ch->ch_filp[class][i], NULL);
 					ch->ch_filp[class][i] = NULL;
 				}
 			}
-			
+
 			oldfs = get_fs();
 			set_fs(get_ds());
 			sys_rename(old, new);
 			set_fs(oldfs);
 		}
-		
+
 		if (likely(old)) {
 			kfree(old);
 			atomic_dec(&say_alloc_names);
@@ -822,7 +821,7 @@ int _say_thread(void *data)
 
 		wait_event_interruptible_timeout(say_event, say_dirty, HZ);
 		say_dirty = false;
-		
+
 	restart_rollover:
 		read_lock(&say_lock);
 		for (ch = channel_list; ch; ch = ch->ch_next) {

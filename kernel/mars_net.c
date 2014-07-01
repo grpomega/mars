@@ -561,7 +561,7 @@ restart:
 		status = _mars_send_raw(msock, msock->s_buffer, msock->s_pos);
 		if (status < 0)
 			goto done;
-		
+
 		brick_block_free(msock->s_buffer, PAGE_SIZE);
 		msock->s_buffer = NULL;
 		msock->s_pos = 0;
@@ -704,7 +704,7 @@ int _add_fields(struct mars_desc_item *mi, const struct meta *meta, int offset, 
 			count = -1;
 			goto done;
 		}
-		
+
 		len = scnprintf(mi->field_name, MAX_FIELD_LEN, "%s.%s", prefix, meta->field_name);
 		if (unlikely(len >= MAX_FIELD_LEN)) {
 			MARS_ERR("field len overflow on '%s.%s'\n", prefix, meta->field_name);
@@ -879,7 +879,7 @@ int _desc_send_item(struct mars_socket *msock, const void *data, const struct ma
 			int diff = transfer_len - data_len;
 			char empty[diff];
 			char sign;
-			
+
 			sign = get_sign(item, data_len, myself_is_bigendian, is_signed);
 			memset(empty, sign, diff);
 
@@ -1088,7 +1088,7 @@ int _desc_recv_item(struct mars_socket *msock, void *data, const struct mars_des
 			} else {
 				memset(item + transfer_len, sign, diff);
 			}
-			
+
 			res = data_len;
 			break;
 		}		
@@ -1299,7 +1299,6 @@ const struct meta mars_cmd_meta[] = {
 	{}
 };
 EXPORT_SYMBOL_GPL(mars_cmd_meta);
-
 
 int mars_send_mref(struct mars_socket *msock, struct mref_object *mref)
 {

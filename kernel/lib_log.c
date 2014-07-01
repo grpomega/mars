@@ -371,7 +371,6 @@ err:
 out_return:;
 }
 
-
 int log_read(struct log_status *logst, bool sloppy, struct log_header *lh, void **payload, int *payload_len)
 {
 	struct mref_object *mref;
@@ -485,7 +484,6 @@ done_free:
 
 }
 EXPORT_SYMBOL_GPL(log_read);
-
 
 ////////////////// module init stuff /////////////////////////
 

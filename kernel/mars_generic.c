@@ -98,7 +98,6 @@ const struct meta mars_timespec_meta[] = {
 };
 EXPORT_SYMBOL_GPL(mars_timespec_meta);
 
-
 //////////////////////////////////////////////////////////////
 
 // crypto stuff

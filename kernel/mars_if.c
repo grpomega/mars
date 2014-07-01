@@ -526,7 +526,7 @@ if_make_request(struct request_queue *q, struct bio *bio)
 					up(&input->kick_sem);
 					goto err;
 				}
-				
+
 				this_len = mref->ref_len; // now may be shorter than originally requested.
 				mref_a->max_len = this_len;
 				if (this_len > bv_len) {
@@ -730,7 +730,7 @@ static int if_switch(struct if_brick *brick)
 		}
 		q->queuedata = input;
 		input->q = q;
-		
+
 		disk = alloc_disk(1);
 		if (!disk) {
 			MARS_ERR("cannot allocate gendisk\n");
@@ -750,7 +750,7 @@ static int if_switch(struct if_brick *brick)
 		capacity = if_get_capacity(brick);
 		MARS_DBG("created device name %s, capacity=%lld\n", disk->disk_name, capacity);
 		if_set_capacity(input, capacity);
-		
+
 		blk_queue_make_request(q, if_make_request);
 #ifdef USE_MAX_SECTORS
 #ifdef MAX_SEGMENT_SIZE
@@ -798,7 +798,7 @@ static int if_switch(struct if_brick *brick)
 #endif
 		MARS_DBG("queue_lock\n");
 		q->queue_lock = &input->req_lock; // needed!
-		
+
 		input->bdev = bdget(MKDEV(disk->major, minor));
 		/* we have no partitions. we contain only ourselves. */
 		input->bdev->bd_contains = input->bdev;
@@ -1103,7 +1103,6 @@ const struct if_output_type if_output_type = {
 static const struct if_output_type *if_output_types[] = {
 	&if_output_type,
 };
-
 
 const struct if_brick_type if_brick_type = {
 	.type_name = "if_brick",

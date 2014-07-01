@@ -6,7 +6,6 @@
 
 #include "lamport.h"
 
-
 struct semaphore lamport_sem = __SEMAPHORE_INITIALIZER(lamport_sem, 1); // TODO: replace with spinlock if possible (first check)
 struct timespec lamport_now = {};
 
@@ -29,7 +28,6 @@ void get_lamport(struct timespec *now)
 
 	up(&lamport_sem);
 }
-
 EXPORT_SYMBOL_GPL(get_lamport);
 
 void set_lamport(struct timespec *old)

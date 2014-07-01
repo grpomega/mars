@@ -31,7 +31,6 @@ static struct task_struct *server_thread[NR_SOCKETS];
 
 ///////////////////////// own helper functions ////////////////////////
 
-
 static
 int cb_thread(void *data)
 {
@@ -177,7 +176,7 @@ int server_io(struct server_brick *brick, struct mars_socket *sock, struct mars_
 		_mref_free(mref);
 		goto done;
 	}
-	
+
 	mref_a->brick = brick;
 	SETUP_CALLBACK(mref, server_endio, mref_a);
 
@@ -185,7 +184,7 @@ int server_io(struct server_brick *brick, struct mars_socket *sock, struct mars_
 	if (!mref->ref_cs_mode < 2)
 		amount = (mref->ref_len - 1) / 1024 + 1;
 	mars_limit_sleep(&server_limiter, amount);
-	
+
 	status = GENERIC_INPUT_CALL(brick->inputs[0], mref_get, mref);
 	if (unlikely(status < 0)) {
 		MARS_WRN("mref_get execution error = %d\n", status);
@@ -280,7 +279,7 @@ int handler_thread(void *data)
 	MARS_DBG("#%d --------------- handler_thread starting on socket %p\n", sock->s_debug_nr, sock);
 	if (!ok)
 		goto done;
-	
+
 	brick->handler_running = true;
 	wake_up_interruptible(&brick->startup_event);
 
@@ -395,7 +394,7 @@ int handler_thread(void *data)
 			} else {
 				MARS_ERR("#%d cannot find brick '%s'\n", sock->s_debug_nr, path);
 			}
-			
+
 		err:
 			cmd.cmd_int1 = status;
 			down(&brick->socket_sem);
@@ -427,7 +426,7 @@ int handler_thread(void *data)
 	MARS_DBG("#%d handler_thread terminating, status = %d\n", sock->s_debug_nr, status);
 
 	debug_nr = sock->s_debug_nr;
-	
+
 	MARS_DBG("#%d done.\n", debug_nr);
 	brick->killme = true;
 	return status;
@@ -538,7 +537,7 @@ static
 char *server_statistics(struct server_brick *brick, int verbose)
 {
 	char *res = brick_string_alloc(1024);
-	
+
 	snprintf(res, 1024,
 		 "cb_running = %d "
 		 "handler_running = %d "

@@ -198,5 +198,4 @@ extern void exit_sy(void);
 extern int init_sy_net(void);
 extern void exit_sy_net(void);
 
-
 #endif

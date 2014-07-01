@@ -152,7 +152,6 @@ int generic_disconnect(struct generic_input *input)
 }
 EXPORT_SYMBOL_GPL(generic_disconnect);
 
-
 //////////////////////////////////////////////////////////////
 
 // general
@@ -670,7 +669,7 @@ struct generic_aspect *_new_aspect(const struct generic_aspect_type *aspect_type
 	struct generic_aspect *res = NULL;
 	int size;
 	int rest;
-	
+
 	size = aspect_type->aspect_size;
 	rest = obj->max_offset - obj->free_offset;
 	if (likely(size <= rest)) {

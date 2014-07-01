@@ -142,5 +142,4 @@ void q_##PREFIX##_dec_flying(struct PREFIX##_queue *q)			\
 }									\
 									\
 
-
 #endif

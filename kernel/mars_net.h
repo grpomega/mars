@@ -120,5 +120,4 @@ extern int mars_recv_cb(struct mars_socket *msock, struct mref_object *mref, str
 extern int init_mars_net(void);
 extern void exit_mars_net(void);
 
-
 #endif

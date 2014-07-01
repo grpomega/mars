@@ -78,7 +78,6 @@ loff_t raw_remaining_space = 0;
 loff_t global_remaining_space = 0;
 EXPORT_SYMBOL_GPL(global_remaining_space);
 
-
 int global_logrot_auto = CONFIG_MARS_LOGROT_AUTO;
 EXPORT_SYMBOL_GPL(global_logrot_auto);
 
@@ -305,7 +304,6 @@ const char *rot_keys[] = {
 
 #define make_rot_msg(rot, key, fmt, args...)			\
 	make_msg(find_key(&(rot)->msgs[0], key), fmt, ##args)
-
 
 #define IS_EXHAUSTED()             (mars_emergency_mode > 0)
 #define IS_EMERGENCY_SECONDARY()   (mars_emergency_mode > 1)
@@ -1039,7 +1037,7 @@ int _update_link_when_necessary(struct mars_rotate *rot, const char *type, const
 
 	if (unlikely(!old || !new))
 		goto out;
-	
+
 	/* Check whether something really has changed (avoid
 	 * useless/disturbing timestamp updates)
 	 */
@@ -1137,7 +1135,7 @@ int _update_version_link(struct mars_rotate *rot, struct trans_logger_info *inf)
 	}
 
 	len = sprintf(data, "%d,%s,%lld:%s", inf->inf_sequence, inf->inf_host, inf->inf_log_pos, prev_link ? prev_link : "");
-	
+
 	MARS_DBG("data = '%s' len = %d\n", data, len);
 
 	mars_digest(digest, data, len);
@@ -1247,7 +1245,7 @@ void write_info_links(struct mars_rotate *rot)
 		rot->infs_is_dirty[hash] = false;
 		memcpy(&inf, &rot->infs[hash], sizeof(struct trans_logger_info));
 		spin_unlock(&rot->inf_lock);
-		
+
 		MARS_DBG("seq = %d min_pos = %lld max_pos = %lld log_pos = %lld is_replaying = %d is_logging = %d\n",
 			 inf.inf_sequence,
 			 inf.inf_min_pos,
@@ -1255,7 +1253,7 @@ void write_info_links(struct mars_rotate *rot)
 			 inf.inf_log_pos,
 			 inf.inf_is_replaying,
 			 inf.inf_is_logging);
-		
+
 		if (inf.inf_is_logging || inf.inf_is_replaying) {
 			count += _update_replay_link(rot, &inf);
 		}
@@ -1368,11 +1366,11 @@ static
 void _show_status_all(struct mars_global *global)
 {
 	struct list_head *tmp;
-	
+
 	down_read(&global->brick_mutex);
 	for (tmp = global->brick_anchor.next; tmp != &global->brick_anchor; tmp = tmp->next) {
 		struct mars_brick *test;
-		
+
 		test = container_of(tmp, struct mars_brick, global_brick_link);
 		if (!test->show_status)
 			continue;
@@ -2270,7 +2268,6 @@ static int make_scan(void *buf, struct mars_dent *dent)
 	return _make_peer(buf, dent, "/mars");
 }
 
-
 static
 int kill_any(void *buf, struct mars_dent *dent)
 {
@@ -2636,7 +2633,7 @@ int make_log_init(void *buf, struct mars_dent *dent)
 			brick_string_free(name);
 		}
 	}
-	
+
 	write_info_links(rot);
 
 	/* Fetch the replay status symlink.
@@ -2903,7 +2900,6 @@ err:
 	return status;
 }
 
-
 /* Internal helper. Return codes:
  * ret < 0 : error
  * ret == 0 : not relevant
@@ -2921,7 +2917,7 @@ int _check_logging_status(struct mars_rotate *rot, int *log_nr, long long *oldpo
 
 	if (!dent)
 		goto done;
-	
+
 	status = -EINVAL;
 	parent = dent->d_parent;
 	CHECK_PTR(parent, done);
@@ -3000,7 +2996,6 @@ int _check_logging_status(struct mars_rotate *rot, int *log_nr, long long *oldpo
 done:
 	return status;
 }
-
 
 static
 int _make_logging_status(struct mars_rotate *rot)
@@ -3181,7 +3176,7 @@ void _rotate_trans(struct mars_rotate *rot)
 	     trans_brick->cease_logging)) {
 		struct trans_logger_input *trans_input;
 		int status;
-		
+
 		next_nr = _get_free_input(trans_brick);
 		if (unlikely(next_nr < 0)) {
 			MARS_ERR_TO(rot->log_say, "no free input\n");
@@ -3189,7 +3184,7 @@ void _rotate_trans(struct mars_rotate *rot)
 		}
 
 		MARS_DBG("start switchover %d -> %d\n", old_nr, next_nr);
-		
+
 		rot->next_relevant_brick =
 			make_brick_all(rot->global,
 				       rot->next_relevant_log,
@@ -3229,7 +3224,7 @@ static
 void _change_trans(struct mars_rotate *rot)
 {
 	struct trans_logger_brick *trans_brick = rot->trans_brick;
-	
+
 	MARS_DBG("replay_mode = %d start_pos = %lld end_pos = %lld\n", trans_brick->replay_mode, rot->start_pos, rot->end_pos);
 
 	if (trans_brick->replay_mode) {
@@ -3888,7 +3883,7 @@ int _update_syncstatus(struct mars_rotate *rot, struct copy_brick *copy, char *p
 		brick_string_free(peer_replay_path);
 		brick_string_free(syncpos_path);
 	}
-	
+
 done:
 	brick_string_free(src);
 	brick_string_free(dst);
@@ -3984,7 +3979,7 @@ static int make_sync(void *buf, struct mars_dent *dent)
 	 */
 	if (do_start && !_check_allow(global, dent->d_parent, "attach"))
 		do_start = false;
-	
+
 	/* Disallow contemporary sync & logfile_replay
 	 */
 	if (do_start &&
@@ -4145,7 +4140,7 @@ static int prepare_delete(void *buf, struct mars_dent *dent)
 			 marker_path, dent->new_stat.mtime.tv_sec, dent->new_stat.mtime.tv_nsec);
 		mars_symlink("1", marker_path, &dent->new_stat.mtime, 0);
 	}
-	
+
 	brick = mars_find_brick(global, NULL, dent->new_link);
 	if (brick &&
 	    unlikely((brick->nr_outputs > 0 && brick->outputs[0] && brick->outputs[0]->nr_connected) ||
@@ -4250,7 +4245,6 @@ static int check_deleted(void *buf, struct mars_dent *dent)
 	if (serial < global->deleted_min || !global->deleted_min)
 		global->deleted_min = serial;
 
-	
  done:
 	return 0;
 }
@@ -4362,7 +4356,7 @@ int make_defaults(void *buf, struct mars_dent *dent)
 		int len;
 		int want_count = 0;
 		int get_count = 0;
-		
+
 		for (tmp = rot_anchor.next; tmp != &rot_anchor; tmp = tmp->next) {
 			struct mars_rotate *rot = container_of(tmp, struct mars_rotate, rot_head);
 			if (rot->wants_sync)
@@ -4677,7 +4671,6 @@ static const struct light_class light_classes[] = {
 		.cl_type = 'l',
 		.cl_father = CL_ACTUAL,
 	},
-
 
 	/* File or symlink to the real device / real (sparse) file
 	 * when hostcontext is missing, the corresponding peer will
@@ -5197,7 +5190,7 @@ static int __init init_light(void)
 	// bump the min_free limit
 	if (min_free_kbytes < new_limit)
 		min_free_kbytes = new_limit;
-	
+
 	/* checkpatch.pl: dev_info() and friends cannot be used
 	 * (see also the above sister comment)
 	 */
