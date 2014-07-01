@@ -30,7 +30,7 @@
 		struct check_input *input = (output)->brick->inputs[0]; \
 		struct generic_output *other = (void *)input->connect;	\
 		if (other) {						\
-			XIO_ERR("instance %d/%s: " fmt,		\
+			XIO_ERR("instance %d/%s: " fmt,			\
 				 (output)->instance_nr,			\
 				 other->type->type_name,		\
 				 ##args);				\

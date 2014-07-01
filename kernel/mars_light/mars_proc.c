@@ -263,7 +263,7 @@ ctl_table mars_table[] = {
 	INT_ENTRY("io_flying_count",	  xio_global_io_flying,  0400),
 	INT_ENTRY("copy_overlap",	  xio_copy_overlap,	  0600),
 	INT_ENTRY("copy_read_prio",	  xio_copy_read_prio,	  0600),
-	INT_ENTRY("copy_write_prio",	  xio_copy_write_prio,   0600),
+	INT_ENTRY("copy_write_prio",	  xio_copy_write_prio,	 0600),
 	INT_ENTRY("copy_read_max_fly",	  xio_copy_read_max_fly, 0600),
 	INT_ENTRY("copy_write_max_fly",   xio_copy_write_max_fly, 0600),
 	INT_ENTRY("statusfiles_rollover_sec", mars_rollover_interval, 0600),

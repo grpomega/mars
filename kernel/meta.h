@@ -43,7 +43,7 @@ enum field_type {
 };
 
 struct meta {
-	/* char	field_name[MAX_FIELD_LEN]; */
+	/* char field_name[MAX_FIELD_LEN]; */
 	char *field_name;
 
 	short field_type;

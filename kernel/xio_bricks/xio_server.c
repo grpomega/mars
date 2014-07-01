@@ -181,7 +181,7 @@ int server_io(struct server_brick *brick, struct xio_socket *sock, struct xio_cm
 	if (unlikely(status < 0)) {
 		XIO_WRN("aio_get execution error = %d\n", status);
 		SIMPLE_CALLBACK(aio, status);
-		status = 0; /*  continue serving requests */
+		status = 0; /*	continue serving requests */
 		goto done;
 	}
 	aio_a->do_put = true;

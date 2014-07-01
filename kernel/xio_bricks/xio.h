@@ -21,7 +21,7 @@
 
 /*  XIO-specific debugging helpers */
 
-#define _XIO_MSG(_class, _dump, _fmt, _args...)			\
+#define _XIO_MSG(_class, _dump, _fmt, _args...)				\
 	brick_say(_class, _dump, "XIO", __BASE_FILE__, __LINE__, __func__, _fmt, ##_args)
 
 #define XIO_FAT(_fmt, _args...) _XIO_MSG(SAY_FATAL, true,  _fmt, ##_args)
@@ -40,7 +40,7 @@
 /*  XIO-specific definitions */
 
 #define XIO_PRIO_HIGH			-1
-#define XIO_PRIO_NORMAL		0 /*  this is automatically used by memset() */
+#define XIO_PRIO_NORMAL			0 /*  this is automatically used by memset() */
 #define XIO_PRIO_LOW			1
 #define XIO_PRIO_NR			3
 
@@ -59,11 +59,11 @@ extern const struct generic_object_type aio_type;
 #define AIO_OBJECT(OBJTYPE)						\
 	CALLBACK_OBJECT(OBJTYPE);					\
 	/* supplied by caller */					\
-	void  *io_data;	 /* preset to NULL for buffered IO */	\
+	void  *io_data;  /* preset to NULL for buffered IO */		\
 	loff_t io_pos;							\
 	int    io_len;							\
 	int    io_may_write;						\
-	int    io_prio;						\
+	int    io_prio;							\
 	int    io_timeout;						\
 	int    io_cs_mode; /* 0 = off, 1 = checksum + data, 2 = checksum only */\
 	/* maintained by the aio implementation, readable for callers */\
@@ -92,7 +92,7 @@ struct xio_info {
 
 #define XIO_BRICK(BRITYPE)						\
 	GENERIC_BRICK(BRITYPE);						\
-	struct generic_object_layout aio_object_layout;		\
+	struct generic_object_layout aio_object_layout;			\
 	struct list_head global_brick_link;				\
 	struct list_head dent_brick_link;				\
 	const char *brick_name;						\
@@ -130,7 +130,7 @@ struct xio_output {
 	void (*reset_statistics)(struct BRITYPE##_brick *brick);	\
 	/* this comment is for keeping TRAILING_SEMICOLON happy */
 
-#define XIO_OUTPUT_OPS(BRITYPE)					\
+#define XIO_OUTPUT_OPS(BRITYPE)						\
 	GENERIC_OUTPUT_OPS(BRITYPE);					\
 	int  (*xio_get_info)(struct BRITYPE##_output *output, struct xio_info *info);\
 	/* aio */							\
@@ -144,7 +144,7 @@ struct xio_output {
 #define _XIO_TYPES(BRITYPE)						\
 									\
 struct BRITYPE##_brick_ops {						\
-	XIO_BRICK_OPS(BRITYPE);					\
+	XIO_BRICK_OPS(BRITYPE);						\
 };									\
 									\
 struct BRITYPE##_output_ops {						\
@@ -174,7 +174,7 @@ DECLARE_BRICK_FUNCTIONS(BRITYPE);					\
 									\
 _XIO_TYPES(BRITYPE)							\
 									\
-DECLARE_ASPECT_FUNCTIONS(BRITYPE, aio);				\
+DECLARE_ASPECT_FUNCTIONS(BRITYPE, aio);					\
 extern int init_xio_##BRITYPE(void);					\
 extern void exit_xio_##BRITYPE(void);					\
 /* this comment is for keeping TRAILING_SEMICOLON happy */

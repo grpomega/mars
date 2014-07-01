@@ -136,19 +136,19 @@ struct trans_logger_brick {
 	struct xio_limiter *replay_limiter;
 
 	int shadow_mem_limit; /*  max # master shadows */
-	bool replay_mode;   /*  mode of operation */
+	bool replay_mode;   /*	mode of operation */
 	bool continuous_replay_mode;   /*  mode of operation */
 	bool log_reads;   /*  additionally log pre-images */
-	bool cease_logging; /*  direct IO without logging (only in case of EMERGENCY) */
+	bool cease_logging; /*	direct IO without logging (only in case of EMERGENCY) */
 	loff_t replay_start_pos; /*  where to start replay */
 	loff_t replay_end_pos;	 /*  end of replay */
-	int new_input_nr;   /*  whereto we should switchover ASAP */
+	int new_input_nr;   /*	whereto we should switchover ASAP */
 	int replay_tolerance; /*  how many bytes to ignore at truncated logfiles */
 	/*  readonly from outside */
 	loff_t replay_current_pos;   /*  end of replay */
-	int log_input_nr;   /*  where we are currently logging to */
-	int old_input_nr;   /*  where old IO requests may be on the fly */
-	int replay_code;    /*  replay errors (if any) */
+	int log_input_nr;   /*	where we are currently logging to */
+	int old_input_nr;   /*	where old IO requests may be on the fly */
+	int replay_code;    /*	replay errors (if any) */
 	bool stopped_logging; /*  direct IO without logging (only in case of EMERGENCY) */
 	/*  private */
 	int disk_io_error;	   /*  replay errors from callbacks */
@@ -215,7 +215,7 @@ struct trans_logger_info {
 	/*  maintained by trans_logger */
 	loff_t inf_min_pos;  /*  current replay position (both in replay mode and in logging mode) */
 	loff_t inf_max_pos;  /*  dito, indicating the "dirty" area which could be potentially "inconsistent" */
-	loff_t inf_log_pos; /*  position of transaction logging (may be ahead of replay position) */
+	loff_t inf_log_pos; /*	position of transaction logging (may be ahead of replay position) */
 	struct timespec inf_min_pos_stamp; /*  when the data has been _successfully_ overwritten */
 /*  when the data has _started_ overwrite (maybe "trashed" in case of errors / aborts) */
 	struct timespec inf_max_pos_stamp;

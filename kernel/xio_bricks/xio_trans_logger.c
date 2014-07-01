@@ -37,7 +37,7 @@
 #else
 #define CONF_TRANS_CHUNKSIZE		(128 * 1024)
 #endif
-#define CONF_TRANS_MAX_AIO_SIZE	PAGE_SIZE
+#define CONF_TRANS_MAX_AIO_SIZE		PAGE_SIZE
 #define CONF_TRANS_ALIGN		0
 
 #define XIO_RPL(_args...) /*empty*/
@@ -66,7 +66,7 @@ int trans_logger_do_crc =
 #endif
 EXPORT_SYMBOL_GPL(trans_logger_do_crc);
 
-int trans_logger_mem_usage; /*  in KB */
+int trans_logger_mem_usage; /*	in KB */
 EXPORT_SYMBOL_GPL(trans_logger_mem_usage);
 
 int trans_logger_max_interleave = -1;
@@ -422,7 +422,7 @@ void hash_extend(struct trans_logger_brick *brick, loff_t *_pos, int *_len, stru
 				extended = true;
 			}
 		}
-	} while (extended); /*  start over for transitive closure */
+	} while (extended); /*	start over for transitive closure */
 
 	*_pos = pos;
 	*_len = len;
@@ -603,7 +603,7 @@ int _make_sshadow(struct trans_logger_output *output,
 
 	/* Get an ordinary internal reference
 	 */
-	obj_get_first(aio); /*  must be paired with __trans_logger_io_put() */
+	obj_get_first(aio); /*	must be paired with __trans_logger_io_put() */
 	atomic_inc(&brick->inner_balance_count);
 
 	/* The internal reference from slave to master is already
@@ -699,7 +699,7 @@ int _write_io_get(struct trans_logger_output *output, struct trans_logger_aio_as
 	atomic64_add(aio->io_len, &global_mshadow_used);
 
 	atomic_inc(&brick->inner_balance_count);
-	obj_get_first(aio); /*  must be paired with __trans_logger_io_put() */
+	obj_get_first(aio); /*	must be paired with __trans_logger_io_put() */
 
 	return aio->io_len;
 }
@@ -722,7 +722,7 @@ int trans_logger_io_get(struct trans_logger_output *output, struct aio_object *a
 
 	atomic_inc(&brick->outer_balance_count);
 
-	if (aio->obj_initialized) { /*  setup already performed */
+	if (aio->obj_initialized) { /*	setup already performed */
 		obj_check(aio);
 		obj_get(aio); /*  must be paired with __trans_logger_io_put() */
 		return aio->io_len;
@@ -1422,7 +1422,7 @@ void phase0_preio(void *private)
 	CHECK_PTR(brick, err);
 
 	/*  signal completion to the upper layer */
-/*  FIXME: immediate error signalling is impossible here, but some delayed signalling should be possible as a workaround. Think! */
+/**/
 
 	obj_check(orig_aio_a->object);
 	_complete(brick, orig_aio_a, 0, true);
@@ -2406,7 +2406,7 @@ static inline
 void flush_inputs(struct trans_logger_brick *brick, int flush_mode)
 {
 	if (flush_mode < 1 ||
-	    /*  there is nothing to append any more */
+	    /*	there is nothing to append any more */
 	    (atomic_read(&brick->q_phase[0].q_queued) <= 0 &&
 	     /*  and the user is waiting for an answer */
 	     (flush_mode < 2 ||
@@ -2576,7 +2576,7 @@ bool _has_conflict(struct trans_logger_brick *brick, struct trans_logger_aio_asp
 	struct list_head *tmp;
 	bool res = false;
 
-	/*  NOTE: replacing this by rwlock_t will not gain anything, because there exists at most 1 reader at any time */
+/**/
 
 	spin_lock(&brick->replay_lock);
 
@@ -2745,7 +2745,7 @@ void trans_logger_replay(struct trans_logger_brick *brick)
 
 		if (brick_thread_should_stop() ||
 		   (!brick->continuous_replay_mode && finished_pos >= brick->replay_end_pos)) {
-			status = 0; /*  treat as EOF */
+			status = 0; /*	treat as EOF */
 			break;
 		}
 

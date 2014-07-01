@@ -100,7 +100,7 @@ extern int xio_recv_raw(struct xio_socket *msock, void *buf, int minlen, int max
 /* Mid-level generic field data exchange
  */
 extern int xio_send_struct(struct xio_socket *msock, const void *data, const struct meta *meta);
-#define xio_recv_struct(_sock_, _data_, _meta_)			\
+#define xio_recv_struct(_sock_, _data_, _meta_)				\
 	({								\
 		_xio_recv_struct(_sock_, _data_, _meta_, __LINE__);	\
 	})

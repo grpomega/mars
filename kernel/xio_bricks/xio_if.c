@@ -280,7 +280,7 @@ if_make_request(struct request_queue *q, struct bio *bio)
 	struct bio_vec bvec;
 	struct bvec_iter i;
 
-	loff_t pos = ((loff_t)bio->bi_iter.bi_sector) << 9; /*  TODO: make dynamic */
+	loff_t pos = ((loff_t)bio->bi_iter.bi_sector) << 9; /*	TODO: make dynamic */
 	int total_len = bio->bi_iter.bi_size;
 
 	bool assigned = false;
@@ -421,7 +421,7 @@ unlock:
 
 #ifdef PREFETCH_LEN
 				prefetch_len = PREFETCH_LEN - offset;
-				/*  TODO: this restriction is too strong to be useful for performance boosts. Do better. */
+/**/
 				if (prefetch_len > total_len)
 					prefetch_len = total_len;
 				if (pos + prefetch_len > brick->dev_size)

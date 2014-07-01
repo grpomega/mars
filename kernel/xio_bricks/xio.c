@@ -74,16 +74,16 @@ const struct meta xio_aio_meta[] = {
 	META_INI(_object_cb.cb_error, struct aio_object, FIELD_INT),
 	META_INI(io_pos,	   struct aio_object, FIELD_INT),
 	META_INI(io_len,	   struct aio_object, FIELD_INT),
-	META_INI(io_may_write,    struct aio_object, FIELD_INT),
+	META_INI(io_may_write,	  struct aio_object, FIELD_INT),
 	META_INI(io_prio,	   struct aio_object, FIELD_INT),
 	META_INI(io_cs_mode,	   struct aio_object, FIELD_INT),
 	META_INI(io_timeout,	   struct aio_object, FIELD_INT),
 	META_INI(io_total_size,   struct aio_object, FIELD_INT),
 	META_INI(io_checksum,	   struct aio_object, FIELD_RAW),
 	META_INI(io_flags,	   struct aio_object, FIELD_INT),
-	META_INI(io_rw,	   struct aio_object, FIELD_INT),
-	META_INI(io_id,	   struct aio_object, FIELD_INT),
-	META_INI(io_skip_sync,    struct aio_object, FIELD_INT),
+	META_INI(io_rw,    struct aio_object, FIELD_INT),
+	META_INI(io_id,    struct aio_object, FIELD_INT),
+	META_INI(io_skip_sync,	  struct aio_object, FIELD_INT),
 	{}
 };
 EXPORT_SYMBOL_GPL(xio_aio_meta);

@@ -85,8 +85,10 @@ struct log_header_v1 {
 		offset += sizeof(val);					\
 	} while (0)
 
-#define SCAN_TXT			"at file_pos = %lld file_offset = %d scan_offset = %d (%lld) test_offset = %d (%lld) restlen = %d: "
-#define SCAN_PAR			file_pos, file_offset, offset, file_pos + file_offset + offset, i, file_pos + file_offset + i, restlen
+#define SCAN_TXT							\
+"at file_pos = %lld file_offset = %d scan_offset = %d (%lld) test_offset = %d (%lld) restlen = %d: "
+#define SCAN_PAR							\
+file_pos, file_offset, offset, file_pos + file_offset + offset, i, file_pos + file_offset + i, restlen
 
 static inline
 int log_scan(void *buf,

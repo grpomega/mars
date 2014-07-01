@@ -18,7 +18,8 @@
 #define NR_COPY_REQUESTS		(32 * 1024 * 1024 / COPY_CHUNK)
 
 #define STATES_PER_PAGE			(PAGE_SIZE / sizeof(struct copy_state))
-#define MAX_SUB_TABLES			(NR_COPY_REQUESTS / STATES_PER_PAGE + (NR_COPY_REQUESTS % STATES_PER_PAGE ? 1 : 0))
+#define MAX_SUB_TABLES			(NR_COPY_REQUESTS / STATES_PER_PAGE + (NR_COPY_REQUESTS % STATES_PER_PAGE ? 1 : 0)\
+)
 #define MAX_COPY_REQUESTS		(PAGE_SIZE / sizeof(struct copy_state *) * STATES_PER_PAGE)
 
 #define GET_STATE(brick, index)						\
@@ -469,7 +470,7 @@ restart:
 			}
 		}
 
-		if (aio0->io_cs_mode > 1) { /*  re-read, this time with data */
+		if (aio0->io_cs_mode > 1) { /*	re-read, this time with data */
 			_clear_aio(brick, index, 0);
 			status = _make_aio(brick, index, 0, NULL, pos, brick->copy_end, READ, 0);
 			if (unlikely(status < 0)) {

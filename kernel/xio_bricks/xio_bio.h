@@ -2,7 +2,7 @@
 #ifndef XIO_BIO_H
 #define XIO_BIO_H
 
-#define BIO_SUBMIT_MAX_LATENCY		250 /*  250 us */
+#define BIO_SUBMIT_MAX_LATENCY		250 /*	250 us */
 #define BIO_IO_R_MAX_LATENCY		40000 /*   40 ms */
 #define BIO_IO_W_MAX_LATENCY		100000 /*  100 ms */
 

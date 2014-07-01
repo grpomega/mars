@@ -2896,7 +2896,7 @@ int make_log_init(void *buf, struct mars_dent *dent)
 			       aio_path,
 			       (const struct generic_brick_type *)&aio_brick_type,
 			       (const struct generic_brick_type*[]){},
-			       rot->trans_brick || switch_on ? 2 : -1, /*  disallow detach when trans_logger is present */
+/**/			       rot->trans_brick || switch_on ? 2 : -1,
 			       "%s",
 			       (const char *[]){},
 			       0,
@@ -3706,7 +3706,7 @@ int make_log_finalize(struct mars_global *global, struct mars_dent *dent)
 	if (rot->has_emergency) {
 		if (rot->todo_primary || rot->is_primary) {
 			trans_brick->cease_logging = true;
-			rot->inf_prev_sequence = 0; /*  disable checking */
+			rot->inf_prev_sequence = 0; /*	disable checking */
 		}
 	} else {
 		if (!trans_logger_resume) {
@@ -4522,7 +4522,7 @@ static int prepare_delete(void *buf, struct mars_dent *dent)
 		}
 	}
 
- ok:
+ok:
 	if (status < 0) {
 		XIO_DBG("deletion '%s' to target '%s' is accomplished\n",
 			 dent->d_path, dent->link_val);
@@ -5601,7 +5601,7 @@ static int __init init_light(void)
 	 */
 	printk(KERN_INFO "loading MARS, tree_version=%s\n", SYMLINK_TREE_VERSION);
 
-	init_say(); /*  this must come first */
+	init_say(); /*	this must come first */
 
 	/* be careful: order is important!
 	 */

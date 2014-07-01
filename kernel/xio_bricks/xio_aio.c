@@ -514,7 +514,7 @@ void aio_stop_thread(struct aio_output *output, int i, bool do_submit_dummy)
 		XIO_DBG("stopping thread %d ...\n", i);
 		brick_thread_stop_nowait(tinfo->thread);
 
-		/*  workaround for waking up the receiver thread. TODO: check whether signal handlong could do better. */
+/**/
 		if (do_submit_dummy) {
 			XIO_DBG("submitting dummy for wakeup %d...\n", i);
 			use_fake_mm();

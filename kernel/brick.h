@@ -134,10 +134,10 @@ struct generic_aspect_context {
 	GENERIC_ASPECT_CONTEXT(generic);
 };
 
-#define obj_check(aio)						\
+#define obj_check(aio)							\
 	({								\
 		if (unlikely(BRICK_CHECKING && !(aio)->obj_initialized)) {\
-			XIO_ERR("aio %p is not initialized\n", (aio));\
+			XIO_ERR("aio %p is not initialized\n", (aio));	\
 		}							\
 		CHECK_ATOMIC(&(aio)->obj_count, 1);			\
 	})
@@ -154,17 +154,17 @@ struct generic_aspect_context {
 
 #define obj_get(aio)							\
 	({								\
-		obj_check(aio);					\
+		obj_check(aio);						\
 		atomic_inc(&(aio)->obj_count);				\
 	})
 
 #define obj_put(aio)							\
 	({								\
-		obj_check(aio);					\
-		atomic_dec_and_test(&(aio)->obj_count);		\
+		obj_check(aio);						\
+		atomic_dec_and_test(&(aio)->obj_count);			\
 	})
 
-#define obj_free(aio)						\
+#define obj_free(aio)							\
 	({								\
 		if (likely(aio)) {					\
 			generic_free((struct generic_object *)(aio));	\
