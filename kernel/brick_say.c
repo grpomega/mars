@@ -23,7 +23,7 @@
 #include <linux/kthread.h>
 #include <linux/syscalls.h>
 
-#include <asm/uaccess.h>
+#include <linux/uaccess.h>
 
 #ifndef GFP_BRICK
 #define GFP_BRICK GFP_NOIO
