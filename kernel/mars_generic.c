@@ -22,7 +22,7 @@ EXPORT_SYMBOL_GPL(mars_global_ban);
 atomic_t mars_global_io_flying = ATOMIC_INIT(0);
 EXPORT_SYMBOL_GPL(mars_global_io_flying);
 
-static char *id = NULL;
+static char *id;
 
 /* TODO: better use MAC addresses (or motherboard IDs where available).
  * Or, at least, some checks for MAC addresses should be recorded / added.
@@ -106,7 +106,7 @@ EXPORT_SYMBOL_GPL(mars_timespec_meta);
 #include <linux/scatterlist.h>
 #include <linux/crypto.h>
 
-static struct crypto_hash *mars_tfm = NULL;
+static struct crypto_hash *mars_tfm;
 static struct semaphore tfm_sem = __SEMAPHORE_INITIALIZER(tfm_sem, 1);
 int mars_digest_size = 0;
 EXPORT_SYMBOL_GPL(mars_digest_size);

@@ -22,7 +22,7 @@ EXPORT_SYMBOL_GPL(mars_client_abort);
 
 ///////////////////////// own helper functions ////////////////////////
 
-static int thread_count = 0;
+static int thread_count;
 
 static void _kill_thread(struct client_threadinfo *ti, const char *name)
 {

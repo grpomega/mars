@@ -72,7 +72,7 @@ struct mars_desc_header {
  */
 
 #ifdef __LITTLE_ENDIAN
-static const bool myself_is_bigendian = false;
+static const bool myself_is_bigendian;
 #endif
 #ifdef __BIG_ENDIAN
 static const bool myself_is_bigendian = true;
@@ -226,7 +226,7 @@ int mars_create_sockaddr(struct sockaddr_storage *addr, const char *spec)
 }
 EXPORT_SYMBOL_GPL(mars_create_sockaddr);
 
-static int current_debug_nr = 0; // no locking, just for debugging
+static int current_debug_nr; // no locking, just for debugging
 
 static
 void _set_socketopts(struct socket *sock)

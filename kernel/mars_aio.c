@@ -23,7 +23,7 @@
 #define MARS_MAX_AIO      1024
 #define MARS_MAX_AIO_READ 32
 
-static struct timing_stats timings[3] = {};
+static struct timing_stats timings[3];
 
 struct threshold aio_submit_threshold = {
 	.thr_ban = &mars_global_ban,

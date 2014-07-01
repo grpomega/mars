@@ -291,7 +291,7 @@ EXPORT_SYMBOL_GPL(brick_thread_stop_nowait);
 
 // number management
 
-static char *nr_table = NULL;
+static char *nr_table;
 int nr_max = 256;
 EXPORT_SYMBOL_GPL(nr_max);
 
@@ -336,8 +336,8 @@ EXPORT_SYMBOL_GPL(put_nr);
 
 // brick stuff
 
-static int nr_brick_types = 0;
-static const struct generic_brick_type *brick_types[MAX_BRICK_TYPES] = {};
+static int nr_brick_types;
+static const struct generic_brick_type *brick_types[MAX_BRICK_TYPES];
 
 int generic_register_brick_type(const struct generic_brick_type *new_type)
 {

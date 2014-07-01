@@ -75,7 +75,7 @@ struct if_hash_anchor {
 ///////////////////////// own static definitions ////////////////////////
 
 // TODO: check bounds, ensure that free minor numbers are recycled
-static int device_minor = 0;
+static int device_minor;
 
 //////////////// object / aspect constructors / destructors ///////////////
 
@@ -1079,8 +1079,7 @@ static struct if_brick_ops if_brick_ops = {
 	.reset_statistics = if_reset_statistics,
 };
 
-static struct if_output_ops if_output_ops = {
-};
+static struct if_output_ops if_output_ops;
 
 const struct if_input_type if_input_type = {
 	.type_name = "if_input",

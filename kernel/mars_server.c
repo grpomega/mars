@@ -26,8 +26,8 @@
 
 #define NR_SOCKETS 3
 
-static struct mars_socket server_socket[NR_SOCKETS] = {};
-static struct task_struct *server_thread[NR_SOCKETS] = {};
+static struct mars_socket server_socket[NR_SOCKETS];
+static struct task_struct *server_thread[NR_SOCKETS];
 
 ///////////////////////// own helper functions ////////////////////////
 
@@ -464,7 +464,7 @@ static int server_switch(struct server_brick *brick)
 	int status = 0;
 
 	if (brick->power.button) {
-		static int version = 0;
+		static int version;
 		bool ok;
 
 		if (brick->power.led_on)

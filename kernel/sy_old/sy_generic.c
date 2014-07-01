@@ -789,7 +789,7 @@ static int _mars_readdir(struct mars_cookie *cookie)
 
 int mars_dent_work(struct mars_global *global, char *dirname, int allocsize, mars_dent_checker_fn checker, mars_dent_worker_fn worker, void *buf, int maxdepth)
 {
-	static int version = 0;
+	static int version;
 	struct mars_cookie cookie = {
 		.global = global,
 		.checker = checker,

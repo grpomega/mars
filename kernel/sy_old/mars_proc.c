@@ -362,7 +362,7 @@ ctl_table mars_root_table[] = {
 
 ////////////////// module init stuff /////////////////////////
 
-static struct ctl_table_header *header = NULL;
+static struct ctl_table_header *header;
 
 int __init init_mars_proc(void)
 {

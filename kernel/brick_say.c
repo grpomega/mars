@@ -74,8 +74,8 @@ static atomic_t say_alloc_channels = ATOMIC_INIT(0);
 static atomic_t say_alloc_names = ATOMIC_INIT(0);
 static atomic_t say_alloc_pages = ATOMIC_INIT(0);
 
-static unsigned long flood_start_jiffies = 0;
-static int flood_count = 0;
+static unsigned long flood_start_jiffies;
+static int flood_count;
 
 struct say_channel {
 	char *ch_name;
@@ -99,11 +99,11 @@ struct say_channel {
 struct say_channel *default_channel = NULL;
 EXPORT_SYMBOL_GPL(default_channel);
 
-static struct say_channel *channel_list = NULL;
+static struct say_channel *channel_list;
 
 static rwlock_t say_lock = __RW_LOCK_UNLOCKED(say_lock);
 
-static struct task_struct *say_thread = NULL;
+static struct task_struct *say_thread;
 
 static DECLARE_WAIT_QUEUE_HEAD(say_event);
 

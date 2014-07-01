@@ -752,7 +752,7 @@ static void copy_ref_io(struct copy_output *output, struct mref_object *mref)
 
 static int copy_switch(struct copy_brick *brick)
 {
-	static int version = 0;
+	static int version;
 
 	MARS_DBG("power.button = %d\n", brick->power.button);
 	if (brick->power.button) {

@@ -399,7 +399,7 @@ do {								\
 
 ///////////////////////////////////////////////////////////////////
 
-static struct task_struct *main_thread = NULL;
+static struct task_struct *main_thread;
 
 typedef int (*light_worker_fn)(void *buf, struct mars_dent *dent);
 
@@ -2191,7 +2191,7 @@ static int _kill_peer(void *buf, struct mars_dent *dent)
 
 static int _make_peer(struct mars_global *global, struct mars_dent *dent, char *path)
 {
-	static int serial = 0;
+	static int serial;
 	struct mars_peerinfo *peer;
 	char *mypeer;
 	char *parent_path;
@@ -5133,9 +5133,9 @@ char *_mars_info(void)
 }
 
 #define INIT_MAX 32
-static char *exit_names[INIT_MAX] = {};
-static void (*exit_fn[INIT_MAX])(void) = {};
-static int exit_fn_nr = 0;
+static char *exit_names[INIT_MAX];
+static void (*exit_fn[INIT_MAX])(void);
+static int exit_fn_nr;
 
 #define DO_INIT(name)						\
 	do {							\
