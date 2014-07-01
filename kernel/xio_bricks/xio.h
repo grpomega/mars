@@ -17,25 +17,6 @@
 #endif
 #endif
 
-#ifndef CONFIG_64BIT
-#error XIO is only tested under 64bit
-#endif
-#ifndef CONFIG_BLOCK
-#error CONFIG_BLOCK must be set
-#endif
-#ifndef CONFIG_PROC_SYSCTL
-#error CONFIG_PROC_SYSCTL must be set
-#endif
-#ifndef CONFIG_HIGH_RES_TIMERS
-#error CONFIG_HIGH_RES_TIMERS must be set
-#endif
-#ifdef CONFIG_DEBUG_SLAB
-#error Fixme: CONFIG_DEBUG_SLAB does not work (fix the bio offset calculation)
-#endif
-#ifdef CONFIG_DEBUG_SG
-#error Fixme: CONFIG_DEBUG_SG does not work (fix the bio offset calculation)
-#endif
-
 /* 	end_remove_this */
 /***********************************************************************/
 
