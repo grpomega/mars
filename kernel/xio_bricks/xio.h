@@ -5,19 +5,6 @@
 #include <linux/semaphore.h>
 #include <linux/rwsem.h>
 
-/* 	remove_this */
-
-/*  check the Kconfig environment */
-
-#ifndef CONFIG_MARS_MODULE
-/*  when unsure, include faked config file */
-#include "mars_config.h"
-#ifndef CONFIG_SMP
-#warning CONFIG_SMP is not set -- are you SURE???
-#endif
-#endif
-
-/* 	end_remove_this */
 /***********************************************************************/
 
 /*  include the generic brick infrastructure */

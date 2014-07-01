@@ -22,9 +22,6 @@
 #include <linux/blkdev.h>
 
 #include "light_strategy.h"
-/* 	remove_this */
-#include "../buildtag.h"
-/* 	end_remove_this */
 
 #include <linux/wait.h>
 
@@ -39,15 +36,6 @@
 #include "../xio_bricks/xio_trans_logger.h"
 #include "../xio_bricks/xio_if.h"
 #include "mars_proc.h"
-/* 	remove_this */
-#ifdef CONFIG_MARS_DEBUG /*  otherwise currently unused */
-#include "../xio_bricks/unused/xio_sio.h"
-#include "../xio_bricks/unused/xio_dummy.h"
-#include "../xio_bricks/unused/xio_check.h"
-#include "../xio_bricks/unused/xio_buf.h"
-#include "../xio_bricks/unused/xio_usebuf.h"
-#endif
-/* 	end_remove_this */
 
 #define REPLAY_TOLERANCE		(PAGE_SIZE + OVERHEAD)
 
@@ -623,27 +611,6 @@ int _set_client_params(struct xio_brick *_brick, void *private)
 	return 1;
 }
 
-/* 	remove_this */
-#ifdef CONFIG_MARS_DEBUG /*  otherwise currently unused */
-static
-int _set_sio_params(struct xio_brick *_brick, void *private)
-{
-	struct sio_brick *sio_brick = (void *)_brick;
-
-	if (_brick->type == (void *)&client_brick_type)
-		return _set_client_params(_brick, private);
-	if (_brick->type != (void *)&sio_brick_type) {
-		XIO_ERR("bad brick type\n");
-		return -EINVAL;
-	}
-	sio_brick->o_direct = false; /*  important! */
-	sio_brick->o_fdsync = true;
-	sio_brick->killme = true;
-	XIO_INF("name = '%s' path = '%s'\n", _brick->brick_name, _brick->brick_path);
-	return 1;
-}
-#endif
-/* 	end_remove_this */
 
 static
 int _set_aio_params(struct xio_brick *_brick, void *private)
@@ -653,12 +620,6 @@ int _set_aio_params(struct xio_brick *_brick, void *private)
 
 	if (_brick->type == (void *)&client_brick_type)
 		return _set_client_params(_brick, private);
-/* 	remove_this */
-#ifdef CONFIG_MARS_DEBUG /*  otherwise currently unused */
-	if (_brick->type == (void *)&sio_brick_type)
-		return _set_sio_params(_brick, private);
-#endif
-/* 	end_remove_this */
 	if (_brick->type != (void *)&aio_brick_type) {
 		XIO_ERR("bad brick type\n");
 		return -EINVAL;
@@ -680,12 +641,6 @@ int _set_bio_params(struct xio_brick *_brick, void *private)
 		return _set_client_params(_brick, private);
 	if (_brick->type == (void *)&aio_brick_type)
 		return _set_aio_params(_brick, private);
-/* 	remove_this */
-#ifdef CONFIG_MARS_DEBUG /*  otherwise currently unused */
-	if (_brick->type == (void *)&sio_brick_type)
-		return _set_sio_params(_brick, private);
-#endif
-/* 	end_remove_this */
 	if (_brick->type != (void *)&bio_brick_type) {
 		XIO_ERR("bad brick type\n");
 		return -EINVAL;
@@ -5498,16 +5453,6 @@ static int light_thread(void *data)
 			(void *)&aio_brick_type,
 			true);
 		XIO_DBG("kill aio    bricks (when possible) = %d\n", status);
-/* 	remove_this */
-#ifdef CONFIG_MARS_DEBUG
-		status = xio_kill_brick_when_possible(&_global,
-			&_global.brick_anchor,
-			false,
-			(void *)&sio_brick_type,
-			true);
-		XIO_DBG("kill sio    bricks (when possible) = %d\n", status);
-#endif
-/* 	end_remove_this */
 		status = xio_kill_brick_when_possible(&_global,
 			&_global.brick_anchor,
 			false,
@@ -5663,10 +5608,7 @@ static int __init init_light(void)
 	/* checkpatch.pl: dev_info() and friends cannot be used
 	 * (see also the above sister comment)
 	 */
-/* 	remove_this */
-	printk(KERN_INFO "loading MARS, BUILDTAG=%s BUILDHOST=%s BUILDDATE=%s\n", BUILDTAG, BUILDHOST, BUILDDATE);
-/* else	printk(KERN_INFO "loading MARS, tree_version=%s\n", SYMLINK_TREE_VERSION); */
-/* 	end_remove_this */
+	printk(KERN_INFO "loading MARS, tree_version=%s\n", SYMLINK_TREE_VERSION);
 
 	init_say(); /*  this must come first */
 
@@ -5676,15 +5618,6 @@ static int __init init_light(void)
 	DO_INIT(brick);
 	DO_INIT(xio);
 	DO_INIT(xio_mapfree);
-/* 	remove_this */
-#ifdef CONFIG_MARS_DEBUG /*  otherwise currently unused */
-	DO_INIT(xio_dummy);
-	DO_INIT(xio_check);
-	DO_INIT(xio_buf);
-	DO_INIT(xio_usebuf);
-	DO_INIT(xio_sio);
-#endif
-/* 	end_remove_this */
 	DO_INIT(xio_net);
 	DO_INIT(xio_client);
 	DO_INIT(xio_aio);
@@ -5732,10 +5665,7 @@ const void *dummy2 = &server_brick_type;
 
 MODULE_DESCRIPTION("MARS Light");
 MODULE_AUTHOR("Thomas Schoebel-Theuer <tst@1und1.de>");
-/* 	remove_this */
-MODULE_VERSION(BUILDTAG " (" BUILDHOST " " BUILDDATE ")");
-/* elseMODULE_VERSION(SYMLINK_TREE_VERSION); */
-/* 	end_remove_this */
+MODULE_VERSION(SYMLINK_TREE_VERSION);
 MODULE_LICENSE("GPL");
 
 #ifndef CONFIG_MARS_DEBUG

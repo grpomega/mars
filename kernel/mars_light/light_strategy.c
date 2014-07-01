@@ -24,13 +24,6 @@
 
 #define SKIP_BIO			false
 
-/* 	remove_this */
-#include <linux/wait.h>
-#ifndef __WAIT_ATOMIC_T_KEY_INITIALIZER
-#define HAS_VFS_READDIR
-#endif
-
-/* 	end_remove_this */
 /*******************************************************************/
 
 /*  meta descriptions */
@@ -643,33 +636,18 @@ int dent_compare(struct mars_dent *a, struct mars_dent *b)
 	return strcmp(a->d_path, b->d_path);
 }
 
-/* 	remove_this */
-#ifndef HAS_VFS_READDIR
-/* 	end_remove_this */
 struct mars_dir_context {
 	struct dir_context ctx;
 	struct mars_cookie *cookie;
 };
-/* 	remove_this */
-#endif
-/* 	end_remove_this */
 
 static
 int mars_filler(void *__buf, const char *name, int namlen, loff_t offset,
 		u64 ino, unsigned int d_type)
 {
-/* 	remove_this */
-#ifdef HAS_VFS_READDIR
-	struct mars_cookie *cookie = __buf;
-
-#else
-/* 	end_remove_this */
 	struct mars_dir_context *buf = __buf;
 	struct mars_cookie *cookie = buf->cookie;
 
-/* 	remove_this */
-#endif
-/* 	end_remove_this */
 	struct mars_global *global = cookie->global;
 	struct list_head *anchor = &global->dent_anchor;
 	struct list_head *start = anchor;
@@ -768,12 +746,6 @@ static int _mars_readdir(struct mars_cookie *cookie)
 		mapping_set_gfp_mask(mapping, mapping_gfp_mask(mapping) & ~(__GFP_IO | __GFP_FS));
 
 	for (;;) {
-/* 	remove_this */
-#ifdef HAS_VFS_READDIR
-		cookie->hit = false;
-		status = vfs_readdir(f, mars_filler, cookie);
-#else
-/* 	end_remove_this */
 		struct mars_dir_context buf = {
 			.ctx.actor = mars_filler,
 			.cookie = cookie,
@@ -781,9 +753,6 @@ static int _mars_readdir(struct mars_cookie *cookie)
 
 		cookie->hit = false;
 		status = iterate_dir(f, &buf.ctx);
-/* 	remove_this */
-#endif
-/* 	end_remove_this */
 		if (!cookie->hit)
 			break;
 		if (unlikely(status < 0)) {

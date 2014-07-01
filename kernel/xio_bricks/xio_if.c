@@ -41,15 +41,6 @@
 #define XIO_MAJOR			MARS_MAJOR
 #endif
 
-/* 	remove_this */
-#ifdef bio_end_sector
-#define HAS_VOID_RELEASE
-#endif
-#ifdef __bvec_iter_bvec
-#define HAS_BVEC_ITER
-#endif
-
-/* 	end_remove_this */
 /************************ global tuning ***********************/
 
 int if_throttle_start_size = 0; /*  in kb */
@@ -92,15 +83,7 @@ void _if_start_io_acct(struct if_input *input, struct bio_wrapper *biow)
 	(void)cpu;
 	part_round_stats(cpu, &input->disk->part0);
 	part_stat_inc(cpu, &input->disk->part0, ios[rw]);
-/* 	remove_this */
-#ifdef HAS_BVEC_ITER
-/* 	end_remove_this */
 	part_stat_add(cpu, &input->disk->part0, sectors[rw], bio->bi_iter.bi_size >> 9);
-/* 	remove_this */
-#else
-	part_stat_add(cpu, &input->disk->part0, sectors[rw], bio->bi_size >> 9);
-#endif
-/* 	end_remove_this */
 	part_inc_in_flight(&input->disk->part0, rw);
 	part_stat_unlock();
 	biow->start_time = jiffies;
@@ -166,29 +149,12 @@ void if_endio(struct generic_callback *cb)
 
 		error = CALLBACK_ERROR(aio_a->object);
 		if (unlikely(error < 0)) {
-/* 	remove_this */
-#ifdef HAS_BVEC_ITER
-/* 	end_remove_this */
 			int bi_size = bio->bi_iter.bi_size;
 
-/* 	remove_this */
-#else
-			int bi_size = bio->bi_size;
-
-#endif
-/* 	end_remove_this */
 			XIO_ERR("NYI: error=%d RETRY LOGIC %u\n", error, bi_size);
 		} else { /*  bio conventions are slightly different... */
 			error = 0;
-/* 	remove_this */
-#ifdef HAS_BVEC_ITER
-/* 	end_remove_this */
 			bio->bi_iter.bi_size = 0;
-/* 	remove_this */
-#else
-			bio->bi_size = 0;
-#endif
-/* 	end_remove_this */
 		}
 		bio_endio(bio, error);
 		bio_put(bio);
@@ -318,25 +284,12 @@ if_make_request(struct request_queue *q, struct bio *bio)
 	struct aio_object *aio = NULL;
 	struct if_aio_aspect *aio_a;
 
-/* 	remove_this */
-#ifdef HAS_BVEC_ITER
-/* 	end_remove_this */
 	struct bio_vec bvec;
 	struct bvec_iter i;
 
 	loff_t pos = ((loff_t)bio->bi_iter.bi_sector) << 9; /*  TODO: make dynamic */
 	int total_len = bio->bi_iter.bi_size;
 
-/* 	remove_this */
-#else
-	struct bio_vec *bvec;
-	int i;
-
-	loff_t pos = ((loff_t)bio->bi_sector) << 9; /*  TODO: make dynamic */
-	int total_len = bio->bi_size;
-
-#endif
-/* 	end_remove_this */
 	bool assigned = false;
 	int error = -ENOSYS;
 
@@ -405,21 +358,10 @@ if_make_request(struct request_queue *q, struct bio *bio)
 	down(&input->kick_sem);
 
 	bio_for_each_segment(bvec, bio, i) {
-/* 	remove_this */
-#ifdef HAS_BVEC_ITER
-/* 	end_remove_this */
 		struct page *page = bvec.bv_page;
 		int bv_len = bvec.bv_len;
 		int offset = bvec.bv_offset;
 
-/* 	remove_this */
-#else
-		struct page *page = bvec->bv_page;
-		int bv_len = bvec->bv_len;
-		int offset = bvec->bv_offset;
-
-#endif
-/* 	end_remove_this */
 		void *data;
 
 #ifdef ARCH_HAS_KMAP
@@ -550,17 +492,8 @@ unlock:
 				 * working in synchronous writethrough mode.
 				 */
 				aio->io_skip_sync = true;
-/* 	remove_this */
-#ifdef HAS_BVEC_ITER
-/* 	end_remove_this */
 				if (!do_skip_sync && i.bi_idx + 1 >= bio->bi_iter.bi_idx)
 					aio->io_skip_sync = false;
-/* 	remove_this */
-#else
-				if (!do_skip_sync && i + 1 >= bio->bi_vcnt)
-					aio->io_skip_sync = false;
-#endif
-/* 	end_remove_this */
 
 				atomic_inc(&input->plugged_count);
 
@@ -905,15 +838,7 @@ static int if_open(struct block_device *bdev, fmode_t mode)
 }
 
 static
-/* 	remove_this */
-#ifdef HAS_VOID_RELEASE
-/* 	end_remove_this */
 void
-/* 	remove_this */
-#else
-int
-#endif
-/* 	end_remove_this */
 if_release(struct gendisk *gd, fmode_t mode)
 {
 	struct if_input *input = gd->private_data;
@@ -934,11 +859,6 @@ if_release(struct gendisk *gd, fmode_t mode)
 			brick->power.off_led);
 		local_trigger();
 	}
-/* 	remove_this */
-#ifndef HAS_VOID_RELEASE
-	return 0;
-#endif
-/* 	end_remove_this */
 }
 
 static const struct block_device_operations if_blkdev_ops = {

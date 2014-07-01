@@ -14,9 +14,6 @@
 #include "xio.h"
 #include "xio_bio.h"
 #include "xio_aio.h"
-/* 	remove_this */
-#include "unused/xio_sio.h"
-/* 	end_remove_this */
 
 #include "../mars_light/light_strategy.h"
 
@@ -197,33 +194,12 @@ int server_io(struct server_brick *brick, struct xio_socket *sock, struct xio_cm
 done:
 	return status;
 }
-/* 	remove_this */
-
-static
-int _set_server_sio_params(struct xio_brick *_brick, void *private)
-{
-	struct sio_brick *sio_brick = (void *)_brick;
-
-	if (_brick->type != (void *)_sio_brick_type) {
-		XIO_ERR("bad brick type\n");
-		return -EINVAL;
-	}
-	sio_brick->o_direct = false;
-	sio_brick->o_fdsync = false;
-	XIO_INF("name = '%s' path = '%s'\n", _brick->brick_name, _brick->brick_path);
-	return 1;
-}
-/* 	end_remove_this */
 
 static
 int _set_server_aio_params(struct xio_brick *_brick, void *private)
 {
 	struct aio_brick *aio_brick = (void *)_brick;
 
-/* 	remove_this */
-	if (_brick->type == (void *)_sio_brick_type)
-		return _set_server_sio_params(_brick, private);
-/* 	end_remove_this */
 	if (_brick->type != (void *)_aio_brick_type) {
 		XIO_ERR("bad brick type\n");
 		return -EINVAL;
@@ -242,10 +218,6 @@ int _set_server_bio_params(struct xio_brick *_brick, void *private)
 
 	if (_brick->type == (void *)_aio_brick_type)
 		return _set_server_aio_params(_brick, private);
-/* 	remove_this */
-	if (_brick->type == (void *)_sio_brick_type)
-		return _set_server_sio_params(_brick, private);
-/* 	end_remove_this */
 	if (_brick->type != (void *)_bio_brick_type) {
 		XIO_ERR("bad brick type\n");
 		return -EINVAL;

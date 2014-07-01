@@ -21,24 +21,6 @@
 #include "../xio_bricks/xio_server.h"
 #include "../xio_bricks/xio_trans_logger.h"
 
-/* 	remove_this */
-#include "../buildtag.h"
-
-const char mars_version_string[] = BUILDTAG " (" BUILDHOST " " BUILDDATE ") "
-#ifndef CONFIG_MARS_DEBUG
-	"production"
-#else
-	"DEBUG"
-#endif
-#ifdef CONFIG_MARS_DEBUG_MEM
-	" BAD_PERFORMANCE"
-#endif
-#ifdef CONFIG_MARS_DEBUG_ORDER0
-	" EVIL_PERFORMANCE"
-#endif
-	;
-
-/* 	end_remove_this */
 xio_info_fn xio_info = NULL;
 
 static
@@ -237,16 +219,6 @@ ctl_table tcp_tuning_table[] = {
 
 static
 ctl_table mars_table[] = {
-/* 	remove_this */
-	{
-		_CTL_NAME
-		.procname	= "version",
-		.data		= (char *)mars_version_string,
-		.maxlen = sizeof(mars_version_string),
-		.mode = 0400,
-		.proc_handler	= &proc_dostring,
-	},
-/* 	end_remove_this */
 	{
 		_CTL_NAME
 		.procname	= "trigger",

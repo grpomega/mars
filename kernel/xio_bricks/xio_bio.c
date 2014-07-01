@@ -17,12 +17,6 @@
 #include "lib_mapfree.h"
 
 #include "xio_bio.h"
-/* 	remove_this */
-#ifdef __bvec_iter_bvec
-#define HAS_BVEC_ITER
-#endif
-
-/* 	end_remove_this */
 static struct timing_stats timings[2];
 
 struct threshold bio_submit_threshold = {
@@ -182,19 +176,9 @@ int make_bio(struct bio_brick *brick,
 	}
 
 	bio->bi_vcnt = i;
-/* 	remove_this */
-#ifdef HAS_BVEC_ITER
-/* 	end_remove_this */
 	bio->bi_iter.bi_idx = 0;
 	bio->bi_iter.bi_size = result_len;
 	bio->bi_iter.bi_sector = sector;
-/* 	remove_this */
-#else
-	bio->bi_idx = 0;
-	bio->bi_size = result_len;
-	bio->bi_sector = sector;
-#endif
-/* 	end_remove_this */
 	bio->bi_bdev = bdev;
 	bio->bi_private = private;
 	bio->bi_end_io = bio_callback;
@@ -353,41 +337,12 @@ void _bio_io_io(struct bio_output *output, struct aio_object *aio, bool cork)
 
 	rw = aio->io_rw & 1;
 	if (brick->do_noidle && !cork) {
-/* 	remove_this */
-/*  adapt to different kernel versions (TBD: improve) */
-#if defined(BIO_RW_RQ_MASK) || defined(BIO_FLUSH)
-		rw |= (1 << BIO_RW_NOIDLE);
-#elif defined(REQ_NOIDLE)
-/* 	end_remove_this */
 		rw |= REQ_NOIDLE;
-/* 	remove_this */
-#else
-#warning Cannot control the NOIDLE flag
-#endif
-/* 	end_remove_this */
 	}
 	if (!aio->io_skip_sync) {
 		if (brick->do_sync) {
-/* 	remove_this */
-#if defined(BIO_RW_RQ_MASK) || defined(BIO_FLUSH)
-			rw |= (1 << BIO_RW_SYNCIO);
-#elif defined(REQ_SYNC)
-/* 	end_remove_this */
 			rw |= REQ_SYNC;
-/* 	remove_this */
-#else
-#warning Cannot control the SYNC flag
-#endif
-/* 	end_remove_this */
 		}
-/* 	remove_this */
-#if defined(BIO_RW_RQ_MASK) || defined(BIO_FLUSH)
-		if (brick->do_unplug && !cork)
-			rw |= (1 << BIO_RW_UNPLUG);
-#else
-		/*  there is no substitute, but the above NOIDLE should do the job (CHECK!) */
-#endif
-/* 	end_remove_this */
 	}
 
 	aio_a->start_stamp = cpu_clock(raw_smp_processor_id());
