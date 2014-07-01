@@ -144,7 +144,7 @@ struct generic_aspect_context {
 #define obj_check(aio)						\
 	({								\
 		if (unlikely(BRICK_CHECKING && !(aio)->obj_initialized)) {\
-			MARS_ERR("aio %p is not initialized\n", (aio));\
+			XIO_ERR("aio %p is not initialized\n", (aio));\
 		}							\
 		CHECK_ATOMIC(&(aio)->obj_count, 1);			\
 	})
@@ -152,7 +152,7 @@ struct generic_aspect_context {
 #define obj_get_first(aio)						\
 	({								\
 		if (unlikely(BRICK_CHECKING && (aio)->obj_initialized)) {\
-			MARS_ERR("aio %p is already initialized\n", (aio));\
+			XIO_ERR("aio %p is already initialized\n", (aio));\
 		}							\
 		_CHECK_ATOMIC(&(aio)->obj_count, !=, 0);		\
 		(aio)->obj_initialized = true;				\
@@ -328,8 +328,8 @@ struct generic_switch {
 	bool button;
 
 	/* set by worker layer, readonly from strategy layer */
-	bool led_on;
-	bool led_off;
+	bool on_led;
+	bool off_led;
 
 	/* private (for any layer) */
 	bool force_off;
@@ -579,8 +579,8 @@ extern inline struct BRITYPE##_##OBJTYPE##_aspect *BRITYPE##_##OBJTYPE##_get_asp
 /* Generic interface to simple brick status changes.
  */
 extern void set_button(struct generic_switch *sw, bool val, bool force);
-extern void set_led_on(struct generic_switch *sw, bool val);
-extern void set_led_off(struct generic_switch *sw, bool val);
+extern void set_on_led(struct generic_switch *sw, bool val);
+extern void set_off_led(struct generic_switch *sw, bool val);
 /*
  * "Forced switch off" means that it cannot be switched on again.
  */

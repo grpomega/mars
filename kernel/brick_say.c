@@ -649,7 +649,7 @@ void reset_flood(void)
  * subsystem-specific {BRICK, MARS}_{INF, WRN, ERR, ...}() functions are
  * mapped to the ordinary kernel printk().
  *
- * As noted elsewhere, dev_info() and friends connot be used in MARS_Light,
+ * As noted elsewhere, dev_info() and friends connot be used in XIO_Light,
  * because /dev/mars/ devices are created dynamically at runtime.
  * On secondaries, no /dev/mars/ devices may exist at all.
  *

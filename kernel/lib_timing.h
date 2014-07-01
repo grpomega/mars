@@ -1,6 +1,6 @@
 /*  (c) 2012 Thomas Schoebel-Theuer / 1&1 Internet AG */
-#ifndef MARS_LIB_TIMING_H
-#define MARS_LIB_TIMING_H
+#ifndef BRICK_LIB_TIMING_H
+#define BRICK_LIB_TIMING_H
 
 #include "brick.h"
 
