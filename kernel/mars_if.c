@@ -138,7 +138,7 @@ void if_endio(struct generic_callback *cb)
 	LAST_CALLBACK(cb);
 	if (unlikely(!mref_a || !mref_a->object)) {
 		MARS_FAT("mref_a = %p mref = %p, something is very wrong here!\n", mref_a, mref_a->object);
-		return;
+		goto out_return;
 	}
 	input = mref_a->input;
 	CHECK_PTR(input, err);
@@ -197,10 +197,10 @@ void if_endio(struct generic_callback *cb)
 	} else {
 		atomic_dec(&input->read_flying_count);
 	}
-	return;
-
+	goto out_return;
 err:
 	MARS_FAT("error in callback, giving up\n");
+out_return:;
 }
 
 /* Kick off plugged mrefs
@@ -610,8 +610,9 @@ done:
 #ifdef BIO_CPU_AFFINE
 	return error;
 #else
-	return;
+	goto out_return;
 #endif
+out_return:;
 }
 
 #ifndef BLK_MAX_REQUEST_COUNT

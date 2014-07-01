@@ -133,7 +133,7 @@ void server_endio(struct generic_callback *cb)
 	brick = mref_a->brick;
 	if (unlikely(!brick)) {
 		MARS_WRN("late IO callback -- cannot do anything\n");
-		return;
+		goto out_return;
 	}
 
 	rw = mref->ref_rw;
@@ -147,9 +147,10 @@ void server_endio(struct generic_callback *cb)
 	spin_unlock(&brick->cb_lock);
 
 	wake_up_interruptible(&brick->cb_event);
-	return;
+	goto out_return;
 err:
 	MARS_FAT("cannot handle callback - giving up\n");
+out_return:;
 }
 
 static

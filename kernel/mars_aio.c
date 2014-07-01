@@ -338,14 +338,14 @@ done:
 
 	aio_ref_put(output, mref);
 	atomic_dec(&mars_global_io_flying);
-	return;
-
+	goto out_return;
 err_found:
 	MARS_FAT("giving up...\n");
 	goto done;
 
 fatal:
 	MARS_FAT("bad pointer, giving up...\n");
+out_return:;
 }
 
 static
@@ -356,10 +356,10 @@ void _complete_mref(struct aio_output *output, struct mref_object *mref, int err
 	mref_a = aio_mref_get_aspect(output->brick, mref);
 	CHECK_PTR(mref_a, fatal);
 	_complete(output, mref_a, err);
-	return;
-
+	goto out_return;
 fatal:
 	MARS_FAT("bad pointer, giving up...\n");
+out_return:;
 }
 
 static
@@ -404,10 +404,10 @@ static void aio_ref_io(struct aio_output *output, struct mref_object *mref)
 	}
 
 	_enqueue(tinfo, mref_a, mref->ref_prio, true);
-	return;
-
+	goto out_return;
 done:
 	_complete_mref(output, mref, err);
+out_return:;
 }
 
 static int aio_submit(struct aio_output *output, struct aio_mref_aspect *mref_a, bool use_fdsync)
@@ -736,12 +736,13 @@ void fd_uninstall(unsigned int fd)
 	MARS_DBG("fd = %d\n", fd);
 	if (unlikely(fd < 0)) {
 		MARS_ERR("bad fd = %d\n", fd);
-		return;
+		goto out_return;
 	}
 	spin_lock(&files->file_lock);
 	fdt = files_fdtable(files);
 	rcu_assign_pointer(fdt->fd[fd], NULL);
 	spin_unlock(&files->file_lock);
+out_return:;
 }
 EXPORT_SYMBOL(fd_uninstall);
 #endif

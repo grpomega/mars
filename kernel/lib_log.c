@@ -112,10 +112,10 @@ void log_write_endio(struct generic_callback *cb)
 	if (logst->signal_event)
 		wake_up_interruptible(logst->signal_event);
 
-	return;
-
+	goto out_return;
 err:
 	MARS_FAT("internal pointer corruption\n");
+out_return:;
 }
 
 void log_flush(struct log_status *logst)
@@ -126,8 +126,7 @@ void log_flush(struct log_status *logst)
 	int gap;
 
 	if (!mref || !logst->count)
-		return;
-
+		goto out_return;
 	gap = 0;
 	align_size = (logst->align_size / PAGE_SIZE) * PAGE_SIZE;
 	if (align_size > 0) {
@@ -167,6 +166,7 @@ void log_flush(struct log_status *logst)
 	logst->log_mref = NULL;
 
 	put_log_cb_info(cb_info);
+out_return:;
 }
 EXPORT_SYMBOL_GPL(log_flush);
 
@@ -365,10 +365,10 @@ void log_read_endio(struct generic_callback *cb)
 	logst->error_code = cb->cb_error;
 	logst->got = true;
 	wake_up_interruptible(&logst->event);
-	return;
-
+	goto out_return;
 err:
 	MARS_FAT("internal pointer corruption\n");
+out_return:;
 }
 
 

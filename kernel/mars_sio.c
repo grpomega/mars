@@ -82,8 +82,7 @@ static void sio_ref_put(struct sio_output *output, struct mref_object *mref)
 	struct sio_mref_aspect *mref_a;
 
 	if (!_mref_put(mref))
-		return;
-
+		goto out_return;
 	file = output->filp;
 	if (file) {
 		mref->ref_total_size = i_size_read(file->f_mapping->host);
@@ -96,6 +95,7 @@ static void sio_ref_put(struct sio_output *output, struct mref_object *mref)
 	}
 
 	_mref_free(mref);
+out_return:;
 }
 
 static
@@ -144,7 +144,8 @@ static void sync_file(struct sio_output *output)
 	if (unlikely(ret)) {
 		MARS_ERR("syncing pages failed: %d\n", ret);
 	}
-	return;
+	goto out_return;
+out_return:;
 }
 
 static
@@ -165,11 +166,11 @@ done:
 	sio_ref_put(output, mref);
 
 	atomic_dec(&mars_global_io_flying);
-	return;
-
+	goto out_return;
 err_found:
 	MARS_FAT("giving up...\n");
 	goto done;
+out_return:;
 }
 
 /* This is called by the threads
@@ -225,7 +226,7 @@ void sio_ref_io(struct sio_output *output, struct mref_object *mref)
 	if (unlikely(!mref_a)) {
 		MARS_FAT("cannot get aspect\n");
 		SIMPLE_CALLBACK(mref, -EINVAL);
-		return;
+		goto out_return;
 	}
 
 	atomic_inc(&mars_global_io_flying);
@@ -249,6 +250,7 @@ void sio_ref_io(struct sio_output *output, struct mref_object *mref)
 	spin_unlock(&tinfo->lock);
 
 	wake_up_interruptible(&tinfo->event);
+out_return:;
 }
 
 static int sio_thread(void *data)
