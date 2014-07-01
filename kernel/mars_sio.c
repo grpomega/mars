@@ -1,4 +1,4 @@
-// (c) 2010 Thomas Schoebel-Theuer / 1&1 Internet AG
+/*  (c) 2010 Thomas Schoebel-Theuer / 1&1 Internet AG */
 
 //#define BRICK_DEBUGGING
 //#define MARS_DEBUGGING
@@ -17,11 +17,11 @@
 
 #include "mars.h"
 
-///////////////////////// own type definitions ////////////////////////
+/************************ own type definitions ***********************/
 
 #include "mars_sio.h"
 
-////////////////// own brick / input / output operations //////////////////
+/***************** own brick * input * output operations *****************/
 
 static int sio_ref_get(struct sio_output *output, struct mref_object *mref)
 {
@@ -51,7 +51,7 @@ static int sio_ref_get(struct sio_output *output, struct mref_object *mref)
 					return -ENODATA;
 				}
 			}
-			// Shorten below EOF, but allow special case
+			/*  Shorten below EOF, but allow special case */
 			if (mref->ref_len > len && len > 0)
 				mref->ref_len = len;
 		}
@@ -70,8 +70,8 @@ static int sio_ref_get(struct sio_output *output, struct mref_object *mref)
 		}
 		mref->ref_data = brick_block_alloc(mref->ref_pos, (mref_a->alloc_len = mref->ref_len));
 		mref_a->do_dealloc = true;
-		//atomic_inc(&output->total_alloc_count);
-		//atomic_inc(&output->alloc_count);
+		/* atomic_inc(&output->total_alloc_count); */
+		/* atomic_inc(&output->alloc_count); */
 	}
 
 	_mref_get_first(mref);
@@ -92,7 +92,7 @@ static void sio_ref_put(struct sio_output *output, struct mref_object *mref)
 	mref_a = sio_mref_get_aspect(output->brick, mref);
 	if (mref_a && mref_a->do_dealloc) {
 		brick_block_free(mref->ref_data, mref_a->alloc_len);
-		//atomic_dec(&output->alloc_count);
+		/* atomic_dec(&output->alloc_count); */
 	}
 
 	_mref_free(mref);
@@ -264,7 +264,7 @@ static int sio_thread(void *data)
 	struct sio_threadinfo *tinfo = data;
 
 	MARS_INF("sio thread has started.\n");
-	//set_user_nice(current, -20);
+	/* set_user_nice(current, -20); */
 
 	while (!brick_thread_should_stop()) {
 		struct list_head *tmp = NULL;
@@ -314,7 +314,7 @@ static int sio_get_info(struct sio_output *output, struct mars_info *info)
 	return 0;
 }
 
-//////////////// informational / statistics ///////////////
+/*************** informational * statistics **************/
 
 static noinline
 char *sio_statistics(struct sio_brick *brick, int verbose)
@@ -359,7 +359,7 @@ void sio_reset_statistics(struct sio_brick *brick)
 	}
 }
 
-//////////////// object / aspect constructors / destructors ///////////////
+/*************** object * aspect constructors * destructors **************/
 
 static int sio_mref_aspect_init_fn(struct generic_aspect *_ini)
 {
@@ -379,7 +379,7 @@ static void sio_mref_aspect_exit_fn(struct generic_aspect *_ini)
 
 MARS_MAKE_STATICS(sio);
 
-////////////////////// brick constructors / destructors ////////////////////
+/********************* brick constructors * destructors *******************/
 
 static int sio_brick_construct(struct sio_brick *brick)
 {
@@ -411,7 +411,7 @@ static int sio_switch(struct sio_brick *brick)
 
 		mars_power_led_off((void *)brick, false);
 
-		// TODO: convert to mapfree infrastructure
+		/*  TODO: convert to mapfree infrastructure */
 
 		oldfs = get_fs();
 		set_fs(get_ds());
@@ -490,7 +490,7 @@ static int sio_output_destruct(struct sio_output *output)
 	return 0;
 }
 
-///////////////////////// static structs ////////////////////////
+/************************ static structs ***********************/
 
 static struct sio_brick_ops sio_brick_ops = {
 	.brick_switch = sio_switch,
@@ -539,7 +539,7 @@ const struct sio_brick_type sio_brick_type = {
 };
 EXPORT_SYMBOL_GPL(sio_brick_type);
 
-////////////////// module init stuff /////////////////////////
+/***************** module init stuff ************************/
 
 int __init init_mars_sio(void)
 {

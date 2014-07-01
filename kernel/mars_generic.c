@@ -1,4 +1,4 @@
-// (c) 2010 Thomas Schoebel-Theuer / 1&1 Internet AG
+/*  (c) 2010 Thomas Schoebel-Theuer / 1&1 Internet AG */
 
 //#define BRICK_DEBUGGING
 //#define MARS_DEBUGGING
@@ -13,9 +13,9 @@
 
 #include "mars.h"
 
-//////////////////////////////////////////////////////////////
+/************************************************************/
 
-// infrastructure
+/*  infrastructure */
 
 struct banning mars_global_ban = {};
 EXPORT_SYMBOL_GPL(mars_global_ban);
@@ -36,19 +36,19 @@ char *my_id(void)
 	struct new_utsname *u;
 
 	if (!id) {
-		//down_read(&uts_sem); // FIXME: this is currenty not EXPORTed from the kernel!
+		/* down_read(&uts_sem); // FIXME: this is currenty not EXPORTed from the kernel! */
 		u = utsname();
 		if (u)
 			id = brick_strdup(u->nodename);
-		//up_read(&uts_sem);
+		/* up_read(&uts_sem); */
 	}
 	return id;
 }
 EXPORT_SYMBOL_GPL(my_id);
 
-//////////////////////////////////////////////////////////////
+/************************************************************/
 
-// object stuff
+/*  object stuff */
 
 const struct generic_object_type mref_type = {
 	.object_type_name = "mref",
@@ -57,13 +57,13 @@ const struct generic_object_type mref_type = {
 };
 EXPORT_SYMBOL_GPL(mref_type);
 
-//////////////////////////////////////////////////////////////
+/************************************************************/
 
-// brick stuff
+/*  brick stuff */
 
-/////////////////////////////////////////////////////////////////////
+/*******************************************************************/
 
-// meta descriptions
+/*  meta descriptions */
 
 const struct meta mars_info_meta[] = {
 	META_INI(current_size,	  struct mars_info, FIELD_INT),
@@ -98,9 +98,9 @@ const struct meta mars_timespec_meta[] = {
 };
 EXPORT_SYMBOL_GPL(mars_timespec_meta);
 
-//////////////////////////////////////////////////////////////
+/************************************************************/
 
-// crypto stuff
+/*  crypto stuff */
 
 #include <linux/scatterlist.h>
 #include <linux/crypto.h>
@@ -120,7 +120,7 @@ void mars_digest(unsigned char *digest, void *data, int len)
 
 	memset(digest, 0, mars_digest_size);
 
-	// TODO: use per-thread instance, omit locking
+	/*  TODO: use per-thread instance, omit locking */
 	down(&tfm_sem);
 
 	crypto_hash_init(&desc);
@@ -149,9 +149,9 @@ out_return:;
 }
 EXPORT_SYMBOL_GPL(mref_checksum);
 
-/////////////////////////////////////////////////////////////////////
+/*******************************************************************/
 
-// init stuff
+/*  init stuff */
 
 int __init init_mars(void)
 {

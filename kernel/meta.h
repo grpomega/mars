@@ -1,10 +1,10 @@
-// (c) 2010 Thomas Schoebel-Theuer / 1&1 Internet AG
+/*  (c) 2010 Thomas Schoebel-Theuer / 1&1 Internet AG */
 #ifndef META_H
 #define META_H
 
-/////////////////////////////////////////////////////////////////////////
+/***********************************************************************/
 
-// metadata descriptions
+/*  metadata descriptions */
 
 /* The idea is to describe your C structures in such a way that
  * transfers to disk or over a network become self-describing.
@@ -43,7 +43,7 @@ enum field_type {
 };
 
 struct meta {
-	//char	field_name[MAX_FIELD_LEN];
+	/* char	field_name[MAX_FIELD_LEN]; */
 	char *field_name;
 
 	short field_type;
@@ -85,6 +85,6 @@ struct meta {
 #define META_INI_SUB(NAME, STRUCT, SUB) { _META_INI_SUB(NAME, STRUCT, SUB) }
 
 extern const struct meta *find_meta(const struct meta *meta, const char *field_name);
-//extern void free_meta(void *data, const struct meta *meta);
+/* extern void free_meta(void *data, const struct meta *meta); */
 
 #endif

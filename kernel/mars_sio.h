@@ -1,4 +1,4 @@
-// (c) 2010 Thomas Schoebel-Theuer / 1&1 Internet AG
+/*  (c) 2010 Thomas Schoebel-Theuer / 1&1 Internet AG */
 #ifndef MARS_SIO_H
 #define MARS_SIO_H
 
@@ -13,7 +13,7 @@ struct sio_mref_aspect {
 
 struct sio_brick {
 	MARS_BRICK(sio);
-	// parameters
+	/*  parameters */
 	bool o_direct;
 	bool o_fdsync;
 };
@@ -37,7 +37,7 @@ struct sio_threadinfo {
 
 struct sio_output {
 	MARS_OUTPUT(sio);
-	// private
+	/*  private */
 	struct file *filp;
 	struct sio_threadinfo tinfo[WITH_THREAD+1];
 	spinlock_t g_lock;

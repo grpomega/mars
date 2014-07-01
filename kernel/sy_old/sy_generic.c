@@ -1,4 +1,4 @@
-// (c) 2010 Thomas Schoebel-Theuer / 1&1 Internet AG
+/*  (c) 2010 Thomas Schoebel-Theuer / 1&1 Internet AG */
 
 //#define BRICK_DEBUGGING
 #define MARS_DEBUGGING
@@ -24,16 +24,16 @@
 
 #define SKIP_BIO			false
 
-//	remove_this
+/* 	remove_this */
 #include <linux/wait.h>
 #ifndef __WAIT_ATOMIC_T_KEY_INITIALIZER
 #define HAS_VFS_READDIR
 #endif
 
-//	end_remove_this
-/////////////////////////////////////////////////////////////////////
+/* 	end_remove_this */
+/*******************************************************************/
 
-// meta descriptions
+/*  meta descriptions */
 
 const struct meta mars_kstat_meta[] = {
 	META_INI(ino, struct kstat, FIELD_UINT),
@@ -67,9 +67,9 @@ const struct meta mars_dent_meta[] = {
 };
 EXPORT_SYMBOL_GPL(mars_dent_meta);
 
-/////////////////////////////////////////////////////////////////////
+/*******************************************************************/
 
-// some helpers
+/*  some helpers */
 
 static inline
 int _length_paranoia(int len, int line)
@@ -311,11 +311,11 @@ loff_t _compute_space(struct kstatfs *kstatfs, loff_t raw_val)
 		fsize = kstatfs->f_bsize;
 
 	MARS_INF("fsize = %d raw_val = %lld\n", fsize, raw_val);
-	// illegal values? cannot do anything....
+	/*  illegal values? cannot do anything.... */
 	if (fsize <= 0)
 		return 0;
 
-	// prevent intermediate integer overflows
+	/*  prevent intermediate integer overflows */
 	if (fsize <= 1024)
 		return raw_val / (1024 / fsize);
 
@@ -366,9 +366,9 @@ err:;
 }
 EXPORT_SYMBOL_GPL(mars_remaining_space);
 
-//////////////////////////////////////////////////////////////
+/************************************************************/
 
-// thread binding
+/*  thread binding */
 
 void bind_to_dent(struct mars_dent *dent, struct say_channel **ch)
 {
@@ -379,7 +379,7 @@ void bind_to_dent(struct mars_dent *dent, struct say_channel **ch)
 		}
 		goto out_return;
 	}
-	// Memoize the channel. This is executed only once for each dent.
+	/*  Memoize the channel. This is executed only once for each dent. */
 	if (unlikely(!dent->d_say_channel)) {
 		struct mars_dent *test = dent->d_parent;
 
@@ -406,9 +406,9 @@ out_return:;
 }
 EXPORT_SYMBOL_GPL(bind_to_dent);
 
-//////////////////////////////////////////////////////////////
+/************************************************************/
 
-// infrastructure
+/*  infrastructure */
 
 struct mars_global *mars_global = NULL;
 EXPORT_SYMBOL_GPL(mars_global);
@@ -484,16 +484,16 @@ int mars_power_button(struct mars_brick *brick, bool val, bool force_off)
 		val = false;
 
 	if (val != oldval) {
-		// check whether switching is possible
+		/*  check whether switching is possible */
 		status = -EINVAL;
-		if (val) { // check all inputs
+		if (val) { /*  check all inputs */
 			if (unlikely(mars_check_inputs(brick))) {
 				MARS_ERR("CANNOT SWITCH ON: brick '%s' '%s' has a turned-off predecessor\n",
 					brick->brick_name,
 					brick->brick_path);
 				goto done;
 			}
-		} else { // check all outputs
+		} else { /*  check all outputs */
 			if (unlikely(mars_check_outputs(brick))) {
 				/* For now, we have a strong rule:
 				 * Switching off is only allowed when no successor brick
@@ -540,9 +540,9 @@ done:
 }
 EXPORT_SYMBOL_GPL(mars_power_button);
 
-/////////////////////////////////////////////////////////////////////
+/*******************************************************************/
 
-// strategy layer
+/*  strategy layer */
 
 struct mars_cookie {
 	struct mars_global *global;
@@ -643,33 +643,33 @@ int dent_compare(struct mars_dent *a, struct mars_dent *b)
 	return strcmp(a->d_path, b->d_path);
 }
 
-//	remove_this
+/* 	remove_this */
 #ifndef HAS_VFS_READDIR
-//	end_remove_this
+/* 	end_remove_this */
 struct mars_dir_context {
 	struct dir_context ctx;
 	struct mars_cookie *cookie;
 };
-//	remove_this
+/* 	remove_this */
 #endif
-//	end_remove_this
+/* 	end_remove_this */
 
 static
 int mars_filler(void *__buf, const char *name, int namlen, loff_t offset,
 		u64 ino, unsigned int d_type)
 {
-//	remove_this
+/* 	remove_this */
 #ifdef HAS_VFS_READDIR
 	struct mars_cookie *cookie = __buf;
 
 #else
-//	end_remove_this
+/* 	end_remove_this */
 	struct mars_dir_context *buf = __buf;
 	struct mars_cookie *cookie = buf->cookie;
 
-//	remove_this
+/* 	remove_this */
 #endif
-//	end_remove_this
+/* 	end_remove_this */
 	struct mars_global *global = cookie->global;
 	struct list_head *anchor = &global->dent_anchor;
 	struct list_head *start = anchor;
@@ -714,7 +714,7 @@ int mars_filler(void *__buf, const char *name, int namlen, loff_t offset,
 			dent = test;
 			goto found;
 		}
-		// keep the list sorted. find the next smallest member.
+		/*  keep the list sorted. find the next smallest member. */
 		if (cmp > 0)
 			break;
 		start = tmp;
@@ -768,12 +768,12 @@ static int _mars_readdir(struct mars_cookie *cookie)
 		mapping_set_gfp_mask(mapping, mapping_gfp_mask(mapping) & ~(__GFP_IO | __GFP_FS));
 
 	for (;;) {
-//	remove_this
+/* 	remove_this */
 #ifdef HAS_VFS_READDIR
 		cookie->hit = false;
 		status = vfs_readdir(f, mars_filler, cookie);
 #else
-//	end_remove_this
+/* 	end_remove_this */
 		struct mars_dir_context buf = {
 			.ctx.actor = mars_filler,
 			.cookie = cookie,
@@ -781,9 +781,9 @@ static int _mars_readdir(struct mars_cookie *cookie)
 
 		cookie->hit = false;
 		status = iterate_dir(f, &buf.ctx);
-//	remove_this
+/* 	remove_this */
 #endif
-//	end_remove_this
+/* 	end_remove_this */
 		if (!cookie->hit)
 			break;
 		if (unlikely(status < 0)) {
@@ -845,7 +845,7 @@ restart:
 	for (tmp = global->dent_anchor.next; tmp != &global->dent_anchor; tmp = tmp->next) {
 		struct mars_dent *dent = container_of(tmp, struct mars_dent, dent_link);
 
-		// treat any member only once during this invocation
+		/*  treat any member only once during this invocation */
 		if (dent->d_version == version)
 			continue;
 		dent->d_version = version;
@@ -855,7 +855,7 @@ restart:
 		status = get_inode(dent->d_path, dent);
 		total_status |= status;
 
-		// recurse into subdirectories by inserting into the flat list
+		/*  recurse into subdirectories by inserting into the flat list */
 		if (S_ISDIR(dent->new_stat.mode) && dent->d_depth <= maxdepth) {
 			struct mars_cookie sub_cookie = {
 				.global = global,
@@ -1012,7 +1012,7 @@ EXPORT_SYMBOL_GPL(mars_find_dent);
 
 int mars_find_dent_all(struct mars_global *global, char *prefix, struct mars_dent ***table)
 {
-	int max = 1024; // provisionary
+	int max = 1024; /*  provisionary */
 	int count = 0;
 	struct list_head *tmp;
 	struct mars_dent **res;
@@ -1097,9 +1097,9 @@ void mars_free_dent_all(struct mars_global *global, struct list_head *anchor)
 }
 EXPORT_SYMBOL_GPL(mars_free_dent_all);
 
-/////////////////////////////////////////////////////////////////////
+/*******************************************************************/
 
-// low-level brick instantiation
+/*  low-level brick instantiation */
 
 struct mars_brick *mars_find_brick(struct mars_global *global, const void *brick_type, const char *path)
 {
@@ -1150,7 +1150,7 @@ int mars_free_brick(struct mars_brick *brick)
 		goto done;
 	}
 
-	// first check whether the brick is in use somewhere
+	/*  first check whether the brick is in use somewhere */
 	for (i = 0; i < brick->type->max_outputs; i++) {
 		struct mars_output *output = brick->outputs[i];
 
@@ -1161,7 +1161,7 @@ int mars_free_brick(struct mars_brick *brick)
 		}
 	}
 
-	// Should not happen, but workaround: wait until flying IO has vanished
+	/*  Should not happen, but workaround: wait until flying IO has vanished */
 	maxsleep = 20000;
 	sleeptime = 1000;
 	for (;;) {
@@ -1329,7 +1329,7 @@ int mars_kill_brick(struct mars_brick *brick)
 	if (brick->show_status)
 		brick->show_status(brick, true);
 
-	// start shutdown
+	/*  start shutdown */
 	set_button_wait((void *)brick, false, true, 0);
 
 	if (likely(brick->power.led_off)) {
@@ -1439,13 +1439,13 @@ restart:
 			brick = container_of(tmp, struct mars_brick, dent_brick_link);
 		else
 			brick = container_of(tmp, struct mars_brick, global_brick_link);
-		// only kill the right brick types
+		/*  only kill the right brick types */
 		if (type && brick->type != type)
 			continue;
-		// only kill marked bricks
+		/*  only kill marked bricks */
 		if (!brick->killme)
 			continue;
-		// only kill unconnected bricks
+		/*  only kill unconnected bricks */
 		if (brick->nr_outputs > 0 && brick->outputs[0] && brick->outputs[0]->nr_connected > 0)
 			continue;
 		if (!even_on && (brick->power.button || !brick->power.led_off))
@@ -1482,9 +1482,9 @@ restart:
 }
 EXPORT_SYMBOL_GPL(mars_kill_brick_when_possible);
 
-/////////////////////////////////////////////////////////////////////
+/*******************************************************************/
 
-// mid-level brick instantiation (identity is based on path strings)
+/*  mid-level brick instantiation (identity is based on path strings) */
 
 char *_vpath_make(int line, const char *fmt, va_list *args)
 {
@@ -1590,7 +1590,7 @@ struct mars_brick *make_brick_all(
 	const char *new_name,
 	const struct generic_brick_type *new_brick_type,
 	const struct generic_brick_type *prev_brick_type[],
-// -1 = off, 0 = leave in current state, +1 = create when necessary, +2 = create + switch on
+/*  -1 = off, 0 = leave in current state, +1 = create when necessary, +2 = create + switch on */
 	int switch_override,
 	const char *new_fmt,
 	const char *prev_fmt[],
@@ -1608,7 +1608,7 @@ struct mars_brick *make_brick_all(
 	int i;
 	int status;
 
-	// treat variable arguments
+	/*  treat variable arguments */
 	va_start(args, prev_count);
 	if (new_fmt)
 		new_path = _new_path = vpath_make(new_fmt, &args);
@@ -1623,25 +1623,25 @@ struct mars_brick *make_brick_all(
 		goto err;
 	}
 
-	// get old switch state
+	/*  get old switch state */
 	brick = mars_find_brick(global, NULL, new_path);
 	switch_state = false;
 	if (brick)
 		switch_state = brick->power.button;
-	// override?
+	/*  override? */
 	if (switch_override > 1)
 		switch_state = true;
 	else if (switch_override < 0)
 		switch_state = false;
-	// even higher override
+	/*  even higher override */
 	if (global && !global->global_power.button)
 		switch_state = false;
 
-	// brick already existing?
+	/*  brick already existing? */
 	if (brick) {
-		// just switch the power state
+		/*  just switch the power state */
 		MARS_DBG("found existing brick '%s'\n", new_path);
-		// highest general override
+		/*  highest general override */
 		if (mars_check_outputs(brick)) {
 			if (!switch_state)
 				MARS_DBG("brick '%s' override 0 -> 1\n", new_path);
@@ -1650,8 +1650,8 @@ struct mars_brick *make_brick_all(
 		goto do_switch;
 	}
 
-	// brick not existing => check whether to create it
-	if (switch_override < 1) { // don't create
+	/*  brick not existing => check whether to create it */
+	if (switch_override < 1) { /*  don't create */
 		MARS_DBG("no need for brick '%s'\n", new_path);
 		goto done;
 	}
@@ -1664,7 +1664,7 @@ struct mars_brick *make_brick_all(
 		new_path,
 		new_name);
 
-	// get all predecessor bricks
+	/*  get all predecessor bricks */
 	for (i = 0; i < prev_count; i++) {
 		char *path = paths[i];
 
@@ -1686,7 +1686,7 @@ struct mars_brick *make_brick_all(
 		}
 	}
 
-	// some generic brick replacements (better performance / network functionality)
+	/*  some generic brick replacements (better performance / network functionality) */
 	brick = NULL;
 	if ((new_brick_type == _bio_brick_type || new_brick_type == _aio_brick_type)
 	   && _client_brick_type != NULL) {
@@ -1720,7 +1720,7 @@ struct mars_brick *make_brick_all(
 	}
 #endif
 
-	// create it...
+	/*  create it... */
 	if (!brick)
 		brick = mars_make_brick(global, belongs, new_brick_type, new_path, new_name);
 	if (unlikely(!brick)) {
@@ -1732,7 +1732,7 @@ struct mars_brick *make_brick_all(
 		goto err;
 	}
 
-	// connect the wires
+	/*  connect the wires */
 	for (i = 0; i < prev_count; i++) {
 		int status;
 
@@ -1744,7 +1744,7 @@ struct mars_brick *make_brick_all(
 	}
 
 do_switch:
-	// call setup function
+	/*  call setup function */
 	if (setup_fn) {
 		int setup_status = setup_fn(brick, private);
 
@@ -1752,7 +1752,7 @@ do_switch:
 			switch_state = 0;
 	}
 
-	// switch on/off (may fail silently, but responsibility is at the workers)
+	/*  switch on/off (may fail silently, but responsibility is at the workers) */
 	status = mars_power_button((void *)brick, switch_state, false);
 	MARS_DBG("switch '%s' to %d status = %d\n", new_path, switch_state, status);
 	goto done;
@@ -1773,9 +1773,9 @@ done:
 }
 EXPORT_SYMBOL_GPL(make_brick_all);
 
-/////////////////////////////////////////////////////////////////////////
+/***********************************************************************/
 
-// statistics
+/*  statistics */
 
 int global_show_statist = 0;
 EXPORT_SYMBOL_GPL(global_show_statist);
@@ -1844,7 +1844,7 @@ void show_statistics(struct mars_global *global, const char *class)
 	int brick_count = 0;
 
 	if (!global_show_statist)
-		return; // silently
+		return; /*  silently */
 
 	brick_mem_statistics(false);
 
@@ -1889,9 +1889,9 @@ void show_statistics(struct mars_global *global, const char *class)
 }
 EXPORT_SYMBOL_GPL(show_statistics);
 
-/////////////////////////////////////////////////////////////////////
+/*******************************************************************/
 
-// power led handling
+/*  power led handling */
 
 void mars_power_led_on(struct mars_brick *brick, bool val)
 {
@@ -1915,9 +1915,9 @@ void mars_power_led_off(struct mars_brick *brick, bool val)
 }
 EXPORT_SYMBOL_GPL(mars_power_led_off);
 
-/////////////////////////////////////////////////////////////////////
+/*******************************************************************/
 
-// init stuff
+/*  init stuff */
 
 int __init init_sy(void)
 {

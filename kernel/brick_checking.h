@@ -1,10 +1,10 @@
-// (c) 2010 Thomas Schoebel-Theuer / 1&1 Internet AG
+/*  (c) 2010 Thomas Schoebel-Theuer / 1&1 Internet AG */
 #ifndef BRICK_CHECKING_H
 #define BRICK_CHECKING_H
 
-/////////////////////////////////////////////////////////////////////////
+/***********************************************************************/
 
-// checking
+/*  checking */
 
 #if defined(CONFIG_MARS_DEBUG) || defined(CONFIG_MARS_CHECKS)
 #define BRICK_CHECKING			true

@@ -1,4 +1,4 @@
-// (c) 2011 Thomas Schoebel-Theuer / 1&1 Internet AG
+/*  (c) 2011 Thomas Schoebel-Theuer / 1&1 Internet AG */
 
 //#define BRICK_DEBUGGING
 //#define MARS_DEBUGGING
@@ -58,7 +58,7 @@ int mars_send_dent_list(struct mars_socket *sock, struct list_head *anchor)
 		if (status < 0)
 			break;
 	}
-	if (status >= 0) { // send EOR
+	if (status >= 0) { /*  send EOR */
 		status = mars_send_struct(sock, NULL, mars_dent_meta);
 	}
 	return status;
@@ -87,7 +87,7 @@ done:
 }
 EXPORT_SYMBOL_GPL(mars_recv_dent_list);
 
-////////////////// module init stuff /////////////////////////
+/***************** module init stuff ************************/
 
 int __init init_sy_net(void)
 {

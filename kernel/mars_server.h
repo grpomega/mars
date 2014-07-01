@@ -1,4 +1,4 @@
-// (c) 2010 Thomas Schoebel-Theuer / 1&1 Internet AG
+/*  (c) 2010 Thomas Schoebel-Theuer / 1&1 Internet AG */
 #ifndef MARS_SERVER_H
 #define MARS_SERVER_H
 

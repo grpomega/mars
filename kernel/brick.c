@@ -1,4 +1,4 @@
-// (c) 2010 Thomas Schoebel-Theuer / 1&1 Internet AG
+/*  (c) 2010 Thomas Schoebel-Theuer / 1&1 Internet AG */
 
 #include <linux/kernel.h>
 #include <linux/module.h>
@@ -11,9 +11,9 @@
 #include "brick.h"
 #include "brick_mem.h"
 
-//////////////////////////////////////////////////////////////
+/************************************************************/
 
-// init / exit functions
+/*  init / exit functions */
 
 void _generic_output_init(struct generic_brick *brick,
 	const struct generic_output_type *type,
@@ -130,7 +130,7 @@ int generic_connect(struct generic_input *input, struct generic_output *output)
 		return -EEXIST;
 	if (unlikely(!list_empty(&input->input_head)))
 		return -EINVAL;
-	// helps only against the most common errors
+	/*  helps only against the most common errors */
 	if (unlikely(input->brick == output->brick))
 		return -EDEADLK;
 
@@ -160,9 +160,9 @@ int generic_disconnect(struct generic_input *input)
 }
 EXPORT_SYMBOL_GPL(generic_disconnect);
 
-//////////////////////////////////////////////////////////////
+/************************************************************/
 
-// general
+/*  general */
 
 int _brick_msleep(int msecs, bool shorten)
 {
@@ -186,7 +186,7 @@ int _brick_msleep(int msecs, bool shorten)
 }
 EXPORT_SYMBOL_GPL(_brick_msleep);
 
-//	remove_this
+/* 	remove_this */
 #if 1
 /* The following _could_ go to kernel/kthread.c.
  * However, we need it only for a workaround here.
@@ -199,7 +199,7 @@ EXPORT_SYMBOL_GPL(_brick_msleep);
 #endif
 
 #ifdef HAS_NEW_KTHREAD
-//	end_remove_this
+/* 	end_remove_this */
 struct kthread {
 	unsigned long flags;
 	unsigned int cpu;
@@ -214,8 +214,8 @@ enum KTHREAD_BITS {
 	KTHREAD_SHOULD_PARK,
 	KTHREAD_IS_PARKED,
 };
-//	remove_this
-#else // HAS_NEW_KTHREAD
+/* 	remove_this */
+#else /*  HAS_NEW_KTHREAD */
 struct kthread {
 	int should_stop;
 
@@ -225,8 +225,8 @@ struct kthread {
 #endif
 	struct completion exited;
 };
-#endif // HAS_NEW_KTHREAD
-//	end_remove_this
+#endif /*  HAS_NEW_KTHREAD */
+/* 	end_remove_this */
 
 #define to_kthread(tsk)							\
 	container_of((tsk)->vfork_done, struct kthread, exited)
@@ -241,9 +241,9 @@ struct kthread {
  * Therefore, you must not call this twice (or after kthread_stop()), at least
  * if you don't get_task_struct() yourself.
  */
-//	remove_this
+/* 	remove_this */
 #ifdef HAS_NEW_KTHREAD
-//	end_remove_this
+/* 	end_remove_this */
 static struct kthread *task_get_live_kthread(struct task_struct *k)
 {
 	struct kthread *kthread;
@@ -270,7 +270,7 @@ void kthread_stop_nowait(struct task_struct *k)
 
 	put_task_struct(k);
 }
-//	remove_this
+/* 	remove_this */
 #else
 void kthread_stop_nowait(struct task_struct *k)
 {
@@ -284,11 +284,11 @@ void kthread_stop_nowait(struct task_struct *k)
        }
 }
 #endif
-//	end_remove_this
+/* 	end_remove_this */
 EXPORT_SYMBOL_GPL(kthread_stop_nowait);
-//	remove_this
+/* 	remove_this */
 #endif
-//	end_remove_this
+/* 	end_remove_this */
 
 void brick_thread_stop_nowait(struct task_struct *k)
 {
@@ -296,9 +296,9 @@ void brick_thread_stop_nowait(struct task_struct *k)
 }
 EXPORT_SYMBOL_GPL(brick_thread_stop_nowait);
 
-//////////////////////////////////////////////////////////////
+/************************************************************/
 
-// number management
+/*  number management */
 
 static char *nr_table;
 int nr_max = 256;
@@ -335,13 +335,13 @@ void put_nr(int nr)
 }
 EXPORT_SYMBOL_GPL(put_nr);
 
-//////////////////////////////////////////////////////////////
+/************************************************************/
 
-// object stuff
+/*  object stuff */
 
-//////////////////////////////////////////////////////////////
+/************************************************************/
 
-// brick stuff
+/*  brick stuff */
 
 static int nr_brick_types;
 static const struct generic_brick_type *brick_types[MAX_BRICK_TYPES];
@@ -378,7 +378,7 @@ EXPORT_SYMBOL_GPL(generic_register_brick_type);
 int generic_unregister_brick_type(const struct generic_brick_type *old_type)
 {
 	BRICK_DBG("generic_unregister_brick_type()\n");
-	return -1; // NYI
+	return -1; /*  NYI */
 }
 EXPORT_SYMBOL_GPL(generic_unregister_brick_type);
 
@@ -399,7 +399,7 @@ int generic_brick_init_full(
 		return -EINVAL;
 	}
 
-	// call the generic constructors
+	/*  call the generic constructors */
 
 	status = generic_brick_init(brick_type, brick);
 	if (status)
@@ -469,7 +469,7 @@ int generic_brick_init_full(
 			return -ENOMEM;
 	}
 
-	// call the specific constructors
+	/*  call the specific constructors */
 	BRICK_DBG("generic_brick_init_full: call specific contructors.\n");
 	if (brick_type->brick_construct) {
 		BRICK_DBG("generic_brick_init_full: calling brick_construct()\n");
@@ -518,7 +518,7 @@ int generic_brick_exit_full(struct generic_brick *brick)
 	int i;
 	int status;
 
-	// first, check all outputs
+	/*  first, check all outputs */
 	for (i = 0; i < brick->type->max_outputs; i++) {
 		struct generic_output *output = brick->outputs[i];
 
@@ -533,7 +533,7 @@ int generic_brick_exit_full(struct generic_brick *brick)
 			return -EPERM;
 		}
 	}
-	// ok, test succeeded. start destruction...
+	/*  ok, test succeeded. start destruction... */
 	for (i = 0; i < brick->type->max_outputs; i++) {
 		struct generic_output *output = brick->outputs[i];
 
@@ -549,7 +549,7 @@ int generic_brick_exit_full(struct generic_brick *brick)
 			if (status < 0)
 				return status;
 			_generic_output_exit(output);
-			brick->outputs[i] = NULL; // others may remain leftover
+			brick->outputs[i] = NULL; /*  others may remain leftover */
 		}
 	}
 	for (i = 0; i < brick->type->max_inputs; i++) {
@@ -569,7 +569,7 @@ int generic_brick_exit_full(struct generic_brick *brick)
 			status = input->type->input_destruct(input);
 			if (status < 0)
 				return status;
-			brick->inputs[i] = NULL; // others may remain leftover
+			brick->inputs[i] = NULL; /*  others may remain leftover */
 			generic_input_exit(input);
 		}
 	}
@@ -584,9 +584,9 @@ int generic_brick_exit_full(struct generic_brick *brick)
 }
 EXPORT_SYMBOL_GPL(generic_brick_exit_full);
 
-////////////////////////////////////////////////////////////////////////
+/**********************************************************************/
 
-// default implementations
+/*  default implementations */
 
 struct generic_object *generic_alloc(struct generic_object_layout *object_layout,
 	const struct generic_object_type *object_type)
@@ -607,7 +607,7 @@ struct generic_object *generic_alloc(struct generic_object_layout *object_layout
 	hint_size = object_layout->size_hint;
 	if (likely(total_size <= hint_size)) {
 		total_size = hint_size;
-	} else { // usually happens only at the first time
+	} else { /*  usually happens only at the first time */
 		object_layout->size_hint = total_size;
 	}
 
@@ -774,9 +774,9 @@ done:
 }
 EXPORT_SYMBOL_GPL(generic_get_aspect);
 
-/////////////////////////////////////////////////////////////////
+/***************************************************************/
 
-// helper stuff
+/*  helper stuff */
 
 void set_button(struct generic_switch *sw, bool val, bool force)
 {
@@ -826,9 +826,9 @@ void set_button_wait(struct generic_brick *brick, bool val, bool force, int time
 }
 EXPORT_SYMBOL_GPL(set_button_wait);
 
-/////////////////////////////////////////////////////////////////
+/***************************************************************/
 
-// meta stuff
+/*  meta stuff */
 
 const struct meta *find_meta(const struct meta *meta, const char *field_name)
 {
@@ -842,9 +842,9 @@ const struct meta *find_meta(const struct meta *meta, const char *field_name)
 }
 EXPORT_SYMBOL_GPL(find_meta);
 
-/////////////////////////////////////////////////////////////////////////
+/***********************************************************************/
 
-// module init stuff
+/*  module init stuff */
 
 int __init init_brick(void)
 {

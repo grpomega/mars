@@ -1,4 +1,4 @@
-// (c) 2011 Thomas Schoebel-Theuer / 1&1 Internet AG
+/*  (c) 2011 Thomas Schoebel-Theuer / 1&1 Internet AG */
 
 //#define BRICK_DEBUGGING
 //#define MARS_DEBUGGING
@@ -21,7 +21,7 @@
 #include "../mars_server.h"
 #include "../mars_trans_logger.h"
 
-//	remove_this
+/* 	remove_this */
 #include "../buildtag.h"
 
 const char mars_version_string[] = BUILDTAG " (" BUILDHOST " " BUILDDATE ") "
@@ -38,7 +38,7 @@ const char mars_version_string[] = BUILDTAG " (" BUILDHOST " " BUILDDATE ") "
 #endif
 	;
 
-//	end_remove_this
+/* 	end_remove_this */
 mars_info_fn mars_info = NULL;
 
 static
@@ -60,7 +60,7 @@ int trigger_sysctl_handler(
 	if (write) {
 		char tmp[8] = {};
 
-		res = len; // fake consumption of all data
+		res = len; /*  fake consumption of all data */
 
 		if (len > 7)
 			len = 7;
@@ -237,7 +237,7 @@ ctl_table tcp_tuning_table[] = {
 
 static
 ctl_table mars_table[] = {
-//	remove_this
+/* 	remove_this */
 	{
 		_CTL_NAME
 		.procname	= "version",
@@ -246,7 +246,7 @@ ctl_table mars_table[] = {
 		.mode = 0400,
 		.proc_handler	= &proc_dostring,
 	},
-//	end_remove_this
+/* 	end_remove_this */
 	{
 		_CTL_NAME
 		.procname	= "trigger",
@@ -322,7 +322,7 @@ ctl_table mars_table[] = {
 	INT_ENTRY("write_throttle_end_percent",   mars_throttle_end,	  0600),
 	INT_ENTRY("write_throttle_size_threshold_kb", if_throttle_start_size, 0400),
 	LIMITER_ENTRIES(&if_throttle,	  "write_throttle",	  "kb"),
-	// changing makes no sense because the server will immediately start upon modprobe
+	/*  changing makes no sense because the server will immediately start upon modprobe */
 	INT_ENTRY("mars_port",		  mars_net_default_port,  0400),
 	INT_ENTRY("network_io_timeout",   global_net_io_timeout,  0600),
 	{
@@ -357,7 +357,7 @@ ctl_table mars_root_table[] = {
 	{}
 };
 
-////////////////// module init stuff /////////////////////////
+/***************** module init stuff ************************/
 
 static struct ctl_table_header *header;
 

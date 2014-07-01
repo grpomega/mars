@@ -1,4 +1,4 @@
-// (c) 2012 Thomas Schoebel-Theuer / 1&1 Internet AG
+/*  (c) 2012 Thomas Schoebel-Theuer / 1&1 Internet AG */
 #ifndef MARS_LIB_LIMITER_H
 #define MARS_LIB_LIMITER_H
 

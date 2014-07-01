@@ -1,6 +1,6 @@
-// (c) 2010 Thomas Schoebel-Theuer / 1&1 Internet AG
+/*  (c) 2010 Thomas Schoebel-Theuer / 1&1 Internet AG */
 
-// Server brick (just for demonstration)
+/*  Server brick (just for demonstration) */
 
 //#define BRICK_DEBUGGING
 //#define MARS_DEBUGGING
@@ -14,13 +14,13 @@
 #include "mars.h"
 #include "mars_bio.h"
 #include "mars_aio.h"
-//	remove_this
+/* 	remove_this */
 #include "mars_sio.h"
-//	end_remove_this
+/* 	end_remove_this */
 
 #include "sy_old/strategy.h"
 
-///////////////////////// own type definitions ////////////////////////
+/************************ own type definitions ***********************/
 
 #include "mars_server.h"
 
@@ -29,7 +29,7 @@
 static struct mars_socket server_socket[NR_SOCKETS];
 static struct task_struct *server_thread[NR_SOCKETS];
 
-///////////////////////// own helper functions ////////////////////////
+/************************ own helper functions ***********************/
 
 static
 int cb_thread(void *data)
@@ -187,7 +187,7 @@ int server_io(struct server_brick *brick, struct mars_socket *sock, struct mars_
 	if (unlikely(status < 0)) {
 		MARS_WRN("mref_get execution error = %d\n", status);
 		SIMPLE_CALLBACK(mref, status);
-		status = 0; // continue serving requests
+		status = 0; /*  continue serving requests */
 		goto done;
 	}
 	mref_a->do_put = true;
@@ -197,7 +197,7 @@ int server_io(struct server_brick *brick, struct mars_socket *sock, struct mars_
 done:
 	return status;
 }
-//	remove_this
+/* 	remove_this */
 
 static
 int _set_server_sio_params(struct mars_brick *_brick, void *private)
@@ -213,17 +213,17 @@ int _set_server_sio_params(struct mars_brick *_brick, void *private)
 	MARS_INF("name = '%s' path = '%s'\n", _brick->brick_name, _brick->brick_path);
 	return 1;
 }
-//	end_remove_this
+/* 	end_remove_this */
 
 static
 int _set_server_aio_params(struct mars_brick *_brick, void *private)
 {
 	struct aio_brick *aio_brick = (void *)_brick;
 
-//	remove_this
+/* 	remove_this */
 	if (_brick->type == (void *)_sio_brick_type)
 		return _set_server_sio_params(_brick, private);
-//	end_remove_this
+/* 	end_remove_this */
 	if (_brick->type != (void *)_aio_brick_type) {
 		MARS_ERR("bad brick type\n");
 		return -EINVAL;
@@ -242,10 +242,10 @@ int _set_server_bio_params(struct mars_brick *_brick, void *private)
 
 	if (_brick->type == (void *)_aio_brick_type)
 		return _set_server_aio_params(_brick, private);
-//	remove_this
+/* 	remove_this */
 	if (_brick->type == (void *)_sio_brick_type)
 		return _set_server_sio_params(_brick, private);
-//	end_remove_this
+/* 	end_remove_this */
 	if (_brick->type != (void *)_bio_brick_type) {
 		MARS_ERR("bad brick type\n");
 		return -EINVAL;
@@ -386,7 +386,7 @@ int handler_thread(void *data)
 				path,
 				(const struct generic_brick_type *)_bio_brick_type,
 				(const struct generic_brick_type *[]){},
-				2, // start always
+				2, /*  start always */
 				path,
 				(const char *[]){},
 				0);
@@ -437,7 +437,7 @@ done:
 	return status;
 }
 
-////////////////// own brick / input / output operations //////////////////
+/***************** own brick * input * output operations *****************/
 
 static int server_get_info(struct server_output *output, struct mars_info *info)
 {
@@ -541,7 +541,7 @@ done:
 	return status;
 }
 
-//////////////// informational / statistics ///////////////
+/*************** informational * statistics **************/
 
 static
 char *server_statistics(struct server_brick *brick, int verbose)
@@ -564,7 +564,7 @@ void server_reset_statistics(struct server_brick *brick)
 {
 }
 
-//////////////// object / aspect constructors / destructors ///////////////
+/*************** object * aspect constructors * destructors **************/
 
 static int server_mref_aspect_init_fn(struct generic_aspect *_ini)
 {
@@ -583,7 +583,7 @@ static void server_mref_aspect_exit_fn(struct generic_aspect *_ini)
 
 MARS_MAKE_STATICS(server);
 
-////////////////////// brick constructors / destructors ////////////////////
+/********************* brick constructors * destructors *******************/
 
 static int server_brick_construct(struct server_brick *brick)
 {
@@ -608,7 +608,7 @@ static int server_output_construct(struct server_output *output)
 	return 0;
 }
 
-///////////////////////// static structs ////////////////////////
+/************************ static structs ***********************/
 
 static struct server_brick_ops server_brick_ops = {
 	.brick_switch = server_switch,
@@ -657,9 +657,9 @@ const struct server_brick_type server_brick_type = {
 };
 EXPORT_SYMBOL_GPL(server_brick_type);
 
-///////////////////////////////////////////////////////////////////////
+/*********************************************************************/
 
-// strategy layer
+/*  strategy layer */
 
 int server_show_statist = 0;
 EXPORT_SYMBOL_GPL(server_show_statist);
@@ -712,7 +712,7 @@ static int _server_thread(void *data)
 		if (unlikely(status < 0 || !mars_socket_is_alive(&handler_socket))) {
 			brick_msleep(500);
 			if (status == -EAGAIN)
-				continue; // without error message
+				continue; /*  without error message */
 			MARS_WRN("accept status = %d\n", status);
 			brick_msleep(1000);
 			continue;
@@ -741,7 +741,7 @@ static int _server_thread(void *data)
 			goto err;
 		}
 
-		// further references are usually held by the threads
+		/*  further references are usually held by the threads */
 		mars_put_socket(&brick->handler_socket);
 
 		/* fire and forget....
@@ -767,13 +767,13 @@ err:
 
 	mars_kill_brick_all(&server_global, &server_global.brick_anchor, false);
 
-	//cleanup_mm();
+	/* cleanup_mm(); */
 
 	MARS_INF("-------- done status = %d ----------\n", status);
 	return status;
 }
 
-////////////////// module init stuff /////////////////////////
+/***************** module init stuff ************************/
 
 struct mars_limiter server_limiter = {
 	.lim_max_rate = 0,

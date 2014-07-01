@@ -1,6 +1,6 @@
-// (c) 2010 Thomas Schoebel-Theuer / 1&1 Internet AG
+/*  (c) 2010 Thomas Schoebel-Theuer / 1&1 Internet AG */
 
-// Copy brick (just for demonstration)
+/*  Copy brick (just for demonstration) */
 
 //#define BRICK_DEBUGGING
 //#define MARS_DEBUGGING
@@ -27,7 +27,7 @@
 #define GET_STATE(brick, index)						\
 	((brick)->st[(index) / STATES_PER_PAGE][(index) % STATES_PER_PAGE])
 
-///////////////////////// own type definitions ////////////////////////
+/************************ own type definitions ***********************/
 
 #include "mars_copy.h"
 
@@ -52,7 +52,7 @@ EXPORT_SYMBOL_GPL(mars_copy_write_max_fly);
 #define is_write_limited(brick)						\
 	(mars_copy_write_max_fly > 0 && atomic_read(&(brick)->copy_write_flight) >= mars_copy_write_max_fly)
 
-///////////////////////// own helper functions ////////////////////////
+/************************ own helper functions ***********************/
 
 /* TODO:
  * The clash logic is untested / alpha stage (Feb. 2011).
@@ -420,14 +420,14 @@ restart:
 		/* fallthrough */
 	case COPY_STATE_READ2:
 		mref1 = st->table[1];
-		if (!mref1) { // idempotence: wait by unchanged state
+		if (!mref1) { /*  idempotence: wait by unchanged state */
 			goto idle;
 		}
 		/* fallthrough => wait for both mrefs to appear */
 	case COPY_STATE_READ1:
 	case COPY_STATE_READ3:
 		mref0 = st->table[0];
-		if (!mref0) { // idempotence: wait by unchanged state
+		if (!mref0) { /*  idempotence: wait by unchanged state */
 			goto idle;
 		}
 		if (brick->copy_limiter) {
@@ -435,10 +435,10 @@ restart:
 
 			mars_limit_sleep(brick->copy_limiter, amount);
 		}
-		// on append mode: increase the end pointer dynamically
+		/*  on append mode: increase the end pointer dynamically */
 		if (brick->append_mode > 0 && mref0->ref_total_size && mref0->ref_total_size > brick->copy_end)
 			brick->copy_end = mref0->ref_total_size;
-		// do verify (when applicable)
+		/*  do verify (when applicable) */
 		mref1 = st->table[1];
 		if (mref1 && state != COPY_STATE_READ3) {
 			int len = mref0->ref_len;
@@ -472,7 +472,7 @@ restart:
 			}
 		}
 
-		if (mref0->ref_cs_mode > 1) { // re-read, this time with data
+		if (mref0->ref_cs_mode > 1) { /*  re-read, this time with data */
 			_clear_mref(brick, index, 0);
 			status = _make_mref(brick, index, 0, NULL, pos, brick->copy_end, READ, 0);
 			if (unlikely(status < 0)) {
@@ -530,7 +530,7 @@ restart:
 		/* fallthrough */
 	case COPY_STATE_WRITTEN:
 		mref1 = st->table[1];
-		if (!mref1) { // idempotence: wait by unchanged state
+		if (!mref1) { /*  idempotence: wait by unchanged state */
 			goto idle;
 		}
 		st->writeout = true;
@@ -575,7 +575,7 @@ idle:
 		progress++;
 	}
 
-	// save the resulting state
+	/*  save the resulting state */
 	st->state = next_state;
 	return progress;
 }
@@ -618,14 +618,14 @@ int _run_copy(struct copy_brick *brick)
 			break;
 		st->prev = prev;
 		prev = index;
-		// call the finite state automaton
+		/*  call the finite state automaton */
 		if (!(st->active[0] | st->active[1])) {
 			progress += _next_state(brick, index, pos);
 			limit = pos;
 		}
 	}
 
-	// check the resulting state: can we advance the copy_last pointer?
+	/*  check the resulting state: can we advance the copy_last pointer? */
 	if (likely(progress && !brick->clash)) {
 		int count = 0;
 
@@ -644,10 +644,10 @@ int _run_copy(struct copy_brick *brick)
 					brick->is_aborting = true;
 				break;
 			}
-			// rollover
+			/*  rollover */
 			st->state = COPY_STATE_START;
 			count += st->len;
-			// check contiguity
+			/*  check contiguity */
 			if (unlikely(GET_OFFSET(pos) + st->len != COPY_CHUNK))
 				break;
 		}
@@ -715,7 +715,7 @@ static int _copy_thread(void *data)
 	return 0;
 }
 
-////////////////// own brick / input / output operations //////////////////
+/***************** own brick * input * output operations *****************/
 
 static int copy_get_info(struct copy_output *output, struct mars_info *info)
 {
@@ -797,7 +797,7 @@ done:
 	return 0;
 }
 
-//////////////// informational / statistics ///////////////
+/*************** informational * statistics **************/
 
 static
 char *copy_statistics(struct copy_brick *brick, int verbose)
@@ -843,7 +843,7 @@ void copy_reset_statistics(struct copy_brick *brick)
 	atomic_set(&brick->total_clash_count, 0);
 }
 
-//////////////// object / aspect constructors / destructors ///////////////
+/*************** object * aspect constructors * destructors **************/
 
 static int copy_mref_aspect_init_fn(struct generic_aspect *_ini)
 {
@@ -862,7 +862,7 @@ static void copy_mref_aspect_exit_fn(struct generic_aspect *_ini)
 
 MARS_MAKE_STATICS(copy);
 
-////////////////////// brick constructors / destructors ////////////////////
+/********************* brick constructors * destructors *******************/
 
 static
 void _free_pages(struct copy_brick *brick)
@@ -890,7 +890,7 @@ static int copy_brick_construct(struct copy_brick *brick)
 	for (i = 0; i < MAX_SUB_TABLES; i++) {
 		struct copy_state *sub_table;
 
-		// this should be usually optimized away as dead code
+		/*  this should be usually optimized away as dead code */
 		if (unlikely(i >= MAX_SUB_TABLES)) {
 			MARS_ERR("sorry, subtable index %d is too large.\n", i);
 			_free_pages(brick);
@@ -923,7 +923,7 @@ static int copy_output_destruct(struct copy_output *output)
 	return 0;
 }
 
-///////////////////////// static structs ////////////////////////
+/************************ static structs ***********************/
 
 static struct copy_brick_ops copy_brick_ops = {
 	.brick_switch = copy_switch,
@@ -976,7 +976,7 @@ const struct copy_brick_type copy_brick_type = {
 };
 EXPORT_SYMBOL_GPL(copy_brick_type);
 
-////////////////// module init stuff /////////////////////////
+/***************** module init stuff ************************/
 
 int __init init_mars_copy(void)
 {

@@ -1,4 +1,4 @@
-// (c) 2011 Thomas Schoebel-Theuer / 1&1 Internet AG
+/*  (c) 2011 Thomas Schoebel-Theuer / 1&1 Internet AG */
 
 #ifndef LIB_QUEUE_H
 #define LIB_QUEUE_H

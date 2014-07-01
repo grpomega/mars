@@ -1,4 +1,4 @@
-// (c) 2011 Thomas Schoebel-Theuer / 1&1 Internet AG
+/*  (c) 2011 Thomas Schoebel-Theuer / 1&1 Internet AG */
 
 //#define BRICK_DEBUGGING
 //#define MARS_DEBUGGING
@@ -15,7 +15,7 @@
 
 #define SEND_PROTO_VERSION		1
 
-////////////////////////////////////////////////////////////////////
+/******************************************************************/
 
 /* Internal data structures for low-level transfer of C structures
  * described by struct meta.
@@ -67,7 +67,7 @@ struct mars_desc_header {
 
 #define MAX_INT_TRANSFER		16
 
-////////////////////////////////////////////////////////////////////
+/******************************************************************/
 
 /* Bytesex conversion / sign extension
  */
@@ -133,7 +133,7 @@ char get_sign(const void *data, int len, bool is_bigendian, bool is_signed)
 	return 0;
 }
 
-////////////////////////////////////////////////////////////////////
+/******************************************************************/
 
 /* Low-level network traffic
  */
@@ -151,11 +151,11 @@ module_param_named(mars_port, mars_net_default_port, int, 0);
 
 struct mars_tcp_params default_tcp_params = {
 	.ip_tos = IPTOS_LOWDELAY,
-	.tcp_window_size = 8 * 1024 * 1024, // for long distance replications
+	.tcp_window_size = 8 * 1024 * 1024, /*  for long distance replications */
 	.tcp_nodelay = 0,
 	.tcp_timeout = 2,
 	.tcp_keepcnt = 3,
-	.tcp_keepintvl = 3, // keepalive ping time
+	.tcp_keepintvl = 3, /*  keepalive ping time */
 	.tcp_keepidle = 4,
 };
 EXPORT_SYMBOL(default_tcp_params);
@@ -209,7 +209,7 @@ int mars_create_sockaddr(struct sockaddr_storage *addr, const char *spec)
 		MARS_DBG("decoded IP = %u.%u.%u.%u\n", u0, u1, u2, u3);
 		sockaddr->sin_addr.s_addr = (__be32)u0 | (__be32)u1 << 8 | (__be32)u2 << 16 | (__be32)u3 << 24;
 	}
-	// deocde port number (when present)
+	/*  deocde port number (when present) */
 	tmp_spec = spec;
 	while (*tmp_spec && *tmp_spec++ != ':')
 		/*empty*/;
@@ -232,7 +232,7 @@ done:
 }
 EXPORT_SYMBOL_GPL(mars_create_sockaddr);
 
-static int current_debug_nr; // no locking, just for debugging
+static int current_debug_nr; /*  no locking, just for debugging */
 
 static
 void _set_socketopts(struct socket *sock)
@@ -257,7 +257,7 @@ void _set_socketopts(struct socket *sock)
 	_setsockopt(sock, SOL_SOCKET, SO_SNDTIMEO, t);
 	_setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, t);
 
-	if (sock->file) { // switch back to blocking mode
+	if (sock->file) { /*  switch back to blocking mode */
 		sock->file->f_flags &= ~O_NONBLOCK;
 	}
 }
@@ -283,7 +283,7 @@ int mars_proto_exchange(struct mars_socket *msock, const char *msg)
 			 status);
 		goto done;
 	}
-	// take the the minimum of both protocol versions
+	/*  take the the minimum of both protocol versions */
 	if (msock->s_send_proto > msock->s_recv_proto)
 		msock->s_send_proto = msock->s_recv_proto;
 done:
@@ -500,13 +500,13 @@ int _mars_send_raw(struct mars_socket *msock, const void *buf, int len)
 				break;
 			}
 			brick_msleep(sleeptime);
-			// linearly increasing backoff
+			/*  linearly increasing backoff */
 			if (sleeptime < 100)
 				sleeptime += 1000 / HZ;
 			continue;
 		}
 		msock->s_send_cnt = 0;
-		if (unlikely(status == -EINTR)) { // ignore it
+		if (unlikely(status == -EINTR)) { /*  ignore it */
 			flush_signals(current);
 			brick_msleep(50);
 			continue;
@@ -659,13 +659,13 @@ int mars_recv_raw(struct mars_socket *msock, void *buf, int minlen, int maxlen)
 				goto err;
 			}
 			brick_msleep(sleeptime);
-			// linearly increasing backoff
+			/*  linearly increasing backoff */
 			if (sleeptime < 100)
 				sleeptime += 1000 / HZ;
 			continue;
 		}
 		msock->s_recv_cnt = 0;
-		if (!status) { // EOF
+		if (!status) { /*  EOF */
 			MARS_WRN("#%d got EOF from socket (done=%d, req_size=%d)\n",
 				msock->s_debug_nr,
 				done,
@@ -693,7 +693,7 @@ final:
 }
 EXPORT_SYMBOL_GPL(mars_recv_raw);
 
-///////////////////////////////////////////////////////////////////////
+/*********************************************************************/
 
 /* Mid-level field data exchange
  */
@@ -782,7 +782,7 @@ struct mars_desc_cache *make_sender_cache(struct mars_socket *msock, const struc
 
 	memset(mc, 0, maxlen);
 	mc->cache_sender_cookie = (u64)meta;
-	// further bits may be used in future
+	/*  further bits may be used in future */
 	mc->cache_sender_proto = msock->s_send_proto;
 	mc->cache_recver_proto = msock->s_recv_proto;
 
@@ -920,7 +920,7 @@ int _desc_send_item(struct mars_socket *msock,
 		} else if (unlikely(transfer_len <= 0)) {
 			MARS_ERR("bad transfer_len = %d\n", transfer_len);
 			goto err;
-		} else { // transfer_len < data_len
+		} else { /*  transfer_len < data_len */
 			char check = get_sign(item, data_len, myself_is_bigendian, is_signed);
 			int start;
 			int end;
@@ -957,7 +957,7 @@ int _desc_send_item(struct mars_socket *msock,
 				}
 			}
 
-			// just omit the higher/lower bytes
+			/*  just omit the higher/lower bytes */
 			data_len = transfer_len;
 			if (myself_is_bigendian)
 				item += end;
@@ -1050,7 +1050,7 @@ int _desc_recv_item(struct mars_socket *msock, void *data, const struct mars_des
 				_CHECK_STATUS("recv_diff");
 			}
 
-			// check that sign extension did no harm
+			/*  check that sign extension did no harm */
 			check = get_sign(empty, diff, mc->cache_is_bigendian, is_signed);
 			while (--diff >= 0) {
 				if (unlikely(empty[diff] != check)) {
@@ -1080,10 +1080,10 @@ int _desc_recv_item(struct mars_socket *msock, void *data, const struct mars_des
 		} else if (unlikely(transfer_len <= 0)) {
 			MARS_ERR("field '%s' bad transfer_len = %d\n", mi->field_name, transfer_len);
 			goto err;
-		} else if (unlikely(!item)) { // shortcut without checks
+		} else if (unlikely(!item)) { /*  shortcut without checks */
 			data_len = transfer_len;
 			goto raw;
-		} else { // transfer_len < data_len
+		} else { /*  transfer_len < data_len */
 			int diff = data_len - transfer_len;
 			char *transfer_ptr = item;
 			char sign;
@@ -1096,7 +1096,7 @@ int _desc_recv_item(struct mars_socket *msock, void *data, const struct mars_des
 			if (unlikely(mc->cache_is_bigendian != myself_is_bigendian))
 				swap_bytes(transfer_ptr, transfer_len);
 
-			// sign-extend from transfer_len to data_len
+			/*  sign-extend from transfer_len to data_len */
 			sign = get_sign(transfer_ptr, transfer_len, myself_is_bigendian, is_signed);
 			if (myself_is_bigendian)
 				memset(item, sign, diff);
@@ -1245,7 +1245,7 @@ int desc_recv_struct(struct mars_socket *msock, void *data, const struct meta *m
 	}
 
 	cache_index = header.h_index;
-	if (cache_index < 0) { // EOR
+	if (cache_index < 0) { /*  EOR */
 		goto done;
 	}
 	if (unlikely(cache_index >= MAX_DESC_CACHE - 1)) {
@@ -1307,7 +1307,7 @@ int _mars_recv_struct(struct mars_socket *msock, void *data, const struct meta *
 }
 EXPORT_SYMBOL_GPL(_mars_recv_struct);
 
-///////////////////////////////////////////////////////////////////////
+/*********************************************************************/
 
 /* High-level transport of mars structures
  */
@@ -1426,7 +1426,7 @@ done:
 }
 EXPORT_SYMBOL_GPL(mars_recv_cb);
 
-////////////////// module init stuff /////////////////////////
+/***************** module init stuff ************************/
 
 char *(*mars_translate_hostname)(const char *name) = NULL;
 EXPORT_SYMBOL_GPL(mars_translate_hostname);

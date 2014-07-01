@@ -1,15 +1,15 @@
-// (c) 2011 Thomas Schoebel-Theuer / 1&1 Internet AG
+/*  (c) 2011 Thomas Schoebel-Theuer / 1&1 Internet AG */
 #ifndef BRICK_MEM_H
 #define BRICK_MEM_H
 
 #include <linux/mm_types.h>
-//	remove_this
+/* 	remove_this */
 
 #ifndef CONFIG_MARS_MODULE
-// when unsure, include faked config file
+/*  when unsure, include faked config file */
 #include "mars_config.h"
 #endif
-//	end_remove_this
+/* 	end_remove_this */
 
 #define BRICK_DEBUG_MEM			4096
 
@@ -41,9 +41,9 @@ extern atomic64_t brick_global_block_used;
  * low_mem_reserve must always exist, anyway).
  */
 
-/////////////////////////////////////////////////////////////////////////
+/***********************************************************************/
 
-// compiler tweaking
+/*  compiler tweaking */
 
 /* Some functions are known to return non-null pointer values,
  * at least under some Kconfig conditions.
@@ -80,14 +80,14 @@ void *brick_mark_nonnull(void *_ptr)
 {
 	char *ptr = _ptr;
 
-	// fool gcc to believe that the pointer were dereferenced...
+	/*  fool gcc to believe that the pointer were dereferenced... */
 	asm("" : : "X" (*ptr));
 	return ptr;
 }
 
-/////////////////////////////////////////////////////////////////////////
+/***********************************************************************/
 
-// small memory allocation (use this only for len < PAGE_SIZE)
+/*  small memory allocation (use this only for len < PAGE_SIZE) */
 
 #define brick_mem_alloc(_len_)						\
 	({								\
@@ -110,13 +110,13 @@ void *brick_mark_nonnull(void *_ptr)
 		}							\
 	} while (0)
 
-// don't use the following directly
+/*  don't use the following directly */
 extern void *_brick_mem_alloc(int len, int line) __attribute__((malloc)) __attribute__((alloc_size(1)));
 extern void _brick_mem_free(void *data, int line);
 
-/////////////////////////////////////////////////////////////////////////
+/***********************************************************************/
 
-// string memory allocation
+/*  string memory allocation */
 
 #define BRICK_STRING_LEN		1024 /* default value when len == 0 */
 
@@ -152,13 +152,13 @@ extern void _brick_mem_free(void *data, int line);
 		}							\
 	} while (0)
 
-// don't use the following directly
+/*  don't use the following directly */
 extern char *_brick_string_alloc(int len, int line) __attribute__((malloc));
 extern void _brick_string_free(const char *data, int line);
 
-/////////////////////////////////////////////////////////////////////////
+/***********************************************************************/
 
-// block memory allocation (for aligned multiples of 512 resp PAGE_SIZE)
+/*  block memory allocation (for aligned multiples of 512 resp PAGE_SIZE) */
 
 #define brick_block_alloc(_pos_, _len_)					\
 	({								\
@@ -175,13 +175,13 @@ extern void _brick_string_free(const char *data, int line);
 
 extern struct page *brick_iomap(void *data, int *offset, int *len);
 
-// don't use the following directly
+/*  don't use the following directly */
 extern void *_brick_block_alloc(loff_t pos, int len, int line) __attribute__((malloc)) __attribute__((alloc_size(2)));
 extern void _brick_block_free(void *data, int len, int cline);
 
-/////////////////////////////////////////////////////////////////////////
+/***********************************************************************/
 
-// reservations / preallocation
+/*  reservations / preallocation */
 
 #define BRICK_MAX_ORDER			11
 
@@ -199,9 +199,9 @@ extern int brick_mem_reserve(void);
 
 extern void brick_mem_statistics(bool final);
 
-/////////////////////////////////////////////////////////////////////////
+/***********************************************************************/
 
-// init
+/*  init */
 
 extern int init_brick_mem(void);
 extern void exit_brick_mem(void);

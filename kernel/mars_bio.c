@@ -1,8 +1,8 @@
-// (c) 2010 Thomas Schoebel-Theuer / 1&1 Internet AG
+/*  (c) 2010 Thomas Schoebel-Theuer / 1&1 Internet AG */
 
-// (c) 2010 Thomas Schoebel-Theuer / 1&1 Internet AG
+/*  (c) 2010 Thomas Schoebel-Theuer / 1&1 Internet AG */
 
-// Bio brick (interface to blkdev IO via kernel bios)
+/*  Bio brick (interface to blkdev IO via kernel bios) */
 
 //#define BRICK_DEBUGGING
 //#define MARS_DEBUGGING
@@ -17,12 +17,12 @@
 #include "lib_mapfree.h"
 
 #include "mars_bio.h"
-//	remove_this
+/* 	remove_this */
 #ifdef __bvec_iter_bvec
 #define HAS_BVEC_ITER
 #endif
 
-//	end_remove_this
+/* 	end_remove_this */
 static struct timing_stats timings[2];
 
 struct threshold bio_submit_threshold = {
@@ -49,9 +49,9 @@ struct threshold bio_io_threshold[2] = {
 };
 EXPORT_SYMBOL_GPL(bio_io_threshold);
 
-///////////////////////// own type definitions ////////////////////////
+/************************ own type definitions ***********************/
 
-///////////////////////// own helper functions ////////////////////////
+/************************ own helper functions ***********************/
 
 /* This is called from the kernel bio layer.
  */
@@ -117,9 +117,9 @@ int make_bio(struct bio_brick *brick,
 		goto out;
 	}
 
-	sector = pos >> 9;		       // TODO: make dynamic
-	sector_offset = pos & ((1 << 9) - 1);  // TODO: make dynamic
-	data_offset = ((unsigned long)data) & ((1 << 9) - 1);  // TODO: make dynamic
+	sector = pos >> 9;		       /*  TODO: make dynamic */
+	sector_offset = pos & ((1 << 9) - 1);  /*  TODO: make dynamic */
+	data_offset = ((unsigned long)data) & ((1 << 9) - 1);  /*  TODO: make dynamic */
 
 	if (unlikely(sector_offset > 0)) {
 		MARS_ERR("odd sector offset %d\n", sector_offset);
@@ -182,23 +182,23 @@ int make_bio(struct bio_brick *brick,
 	}
 
 	bio->bi_vcnt = i;
-//	remove_this
+/* 	remove_this */
 #ifdef HAS_BVEC_ITER
-//	end_remove_this
+/* 	end_remove_this */
 	bio->bi_iter.bi_idx = 0;
 	bio->bi_iter.bi_size = result_len;
 	bio->bi_iter.bi_sector = sector;
-//	remove_this
+/* 	remove_this */
 #else
 	bio->bi_idx = 0;
 	bio->bi_size = result_len;
 	bio->bi_sector = sector;
 #endif
-//	end_remove_this
+/* 	end_remove_this */
 	bio->bi_bdev = bdev;
 	bio->bi_private = private;
 	bio->bi_end_io = bio_callback;
-	bio->bi_rw = 0; // must be filled in later
+	bio->bi_rw = 0; /*  must be filled in later */
 	status = result_len;
 
 out:
@@ -213,7 +213,7 @@ out:
 	return status;
 }
 
-////////////////// own brick / input / output operations //////////////////
+/***************** own brick * input * output operations *****************/
 
 #define PRIO_INDEX(mref) ((mref)->ref_prio + 1)
 
@@ -261,7 +261,7 @@ static int bio_ref_get(struct bio_output *output, struct mref_object *mref)
 	mref_a->output = output;
 	mref_a->bio = NULL;
 
-	if (!mref->ref_data) { // buffered IO.
+	if (!mref->ref_data) { /*  buffered IO. */
 		status = -ENOMEM;
 		mref->ref_data = brick_block_alloc(mref->ref_pos, (mref_a->alloc_len = mref->ref_len));
 		mref_a->do_dealloc = true;
@@ -353,41 +353,41 @@ void _bio_ref_io(struct bio_output *output, struct mref_object *mref, bool cork)
 
 	rw = mref->ref_rw & 1;
 	if (brick->do_noidle && !cork) {
-//	remove_this
-// adapt to different kernel versions (TBD: improve)
+/* 	remove_this */
+/*  adapt to different kernel versions (TBD: improve) */
 #if defined(BIO_RW_RQ_MASK) || defined(BIO_FLUSH)
 		rw |= (1 << BIO_RW_NOIDLE);
 #elif defined(REQ_NOIDLE)
-//	end_remove_this
+/* 	end_remove_this */
 		rw |= REQ_NOIDLE;
-//	remove_this
+/* 	remove_this */
 #else
 #warning Cannot control the NOIDLE flag
 #endif
-//	end_remove_this
+/* 	end_remove_this */
 	}
 	if (!mref->ref_skip_sync) {
 		if (brick->do_sync) {
-//	remove_this
+/* 	remove_this */
 #if defined(BIO_RW_RQ_MASK) || defined(BIO_FLUSH)
 			rw |= (1 << BIO_RW_SYNCIO);
 #elif defined(REQ_SYNC)
-//	end_remove_this
+/* 	end_remove_this */
 			rw |= REQ_SYNC;
-//	remove_this
+/* 	remove_this */
 #else
 #warning Cannot control the SYNC flag
 #endif
-//	end_remove_this
+/* 	end_remove_this */
 		}
-//	remove_this
+/* 	remove_this */
 #if defined(BIO_RW_RQ_MASK) || defined(BIO_FLUSH)
 		if (brick->do_unplug && !cork)
 			rw |= (1 << BIO_RW_UNPLUG);
 #else
-		// there is no substitute, but the above NOIDLE should do the job (CHECK!)
+		/*  there is no substitute, but the above NOIDLE should do the job (CHECK!) */
 #endif
-//	end_remove_this
+/* 	end_remove_this */
 	}
 
 	mref_a->start_stamp = cpu_clock(raw_smp_processor_id());
@@ -445,7 +445,7 @@ void bio_ref_io(struct bio_output *output, struct mref_object *mref)
 		goto out_return;
 	}
 
-	// realtime IO: start immediately
+	/*  realtime IO: start immediately */
 	_bio_ref_io(output, mref, false);
 	BIO_REF_PUT(output, mref);
 	goto out_return;
@@ -722,7 +722,7 @@ done:
 	return status;
 }
 
-//////////////// informational / statistics ///////////////
+/*************** informational * statistics **************/
 
 static noinline
 char *bio_statistics(struct bio_brick *brick, int verbose)
@@ -767,7 +767,7 @@ void bio_reset_statistics(struct bio_brick *brick)
 	atomic_set(&brick->total_completed_count[2], 0);
 }
 
-//////////////// object / aspect constructors / destructors ///////////////
+/*************** object * aspect constructors * destructors **************/
 
 static int bio_mref_aspect_init_fn(struct generic_aspect *_ini)
 {
@@ -786,7 +786,7 @@ static void bio_mref_aspect_exit_fn(struct generic_aspect *_ini)
 
 MARS_MAKE_STATICS(bio);
 
-////////////////////// brick constructors / destructors ////////////////////
+/********************* brick constructors * destructors *******************/
 
 static int bio_brick_construct(struct bio_brick *brick)
 {
@@ -817,7 +817,7 @@ static int bio_output_destruct(struct bio_output *output)
 	return 0;
 }
 
-///////////////////////// static structs ////////////////////////
+/************************ static structs ***********************/
 
 static struct bio_brick_ops bio_brick_ops = {
 	.brick_switch = bio_switch,
@@ -867,7 +867,7 @@ const struct bio_brick_type bio_brick_type = {
 };
 EXPORT_SYMBOL_GPL(bio_brick_type);
 
-////////////////// module init stuff /////////////////////////
+/***************** module init stuff ************************/
 
 int __init init_mars_bio(void)
 {

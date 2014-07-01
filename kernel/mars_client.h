@@ -1,4 +1,4 @@
-// (c) 2010 Thomas Schoebel-Theuer / 1&1 Internet AG
+/*  (c) 2010 Thomas Schoebel-Theuer / 1&1 Internet AG */
 #ifndef MARS_CLIENT_H
 #define MARS_CLIENT_H
 
@@ -21,13 +21,13 @@ struct client_mref_aspect {
 
 struct client_brick {
 	MARS_BRICK(client);
-	// tunables
-	int max_flying; // limit on parallelism
-	int io_timeout;    // > 0: report IO errors after timeout (in seconds)
+	/*  tunables */
+	int max_flying; /*  limit on parallelism */
+	int io_timeout;    /*  > 0: report IO errors after timeout (in seconds) */
 	bool limit_mode;
 
-	// readonly from outside
-	int connection_state; // 0 = switched off, 1 = not connected, 2 = connected
+	/*  readonly from outside */
+	int connection_state; /*  0 = switched off, 1 = not connected, 2 = connected */
 };
 
 struct client_input {

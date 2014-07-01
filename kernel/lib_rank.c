@@ -1,5 +1,5 @@
-// (c) 2010 Thomas Schoebel-Theuer / 1&1 Internet AG
-// (c) 2012 Thomas Schoebel-Theuer
+/*  (c) 2010 Thomas Schoebel-Theuer / 1&1 Internet AG */
+/*  (c) 2012 Thomas Schoebel-Theuer */
 
 //#define BRICK_DEBUGGING
 
@@ -36,7 +36,7 @@ void ranking_compute(struct rank_data *rkd, const struct rank_info rki[], int x)
 		y0 = rki[i].rki_y;
 		y1 = rki[i+1].rki_y;
 
-		// linear interpolation
+		/*  linear interpolation */
 		points = ((long long)(x - x0) * (long long)(y1 - y0)) / (x1 - x0) + y0;
 		break;
 	}
@@ -56,7 +56,7 @@ int ranking_select(struct rank_data rkd[], int rkd_count)
 
 		if (rest <= 0)
 			continue;
-		//rest -= tmp->rkd_got;
+		/* rest -= tmp->rkd_got; */
 		if (rest > max) {
 			max = rest;
 			res = i;

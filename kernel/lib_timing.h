@@ -1,4 +1,4 @@
-// (c) 2012 Thomas Schoebel-Theuer / 1&1 Internet AG
+/*  (c) 2012 Thomas Schoebel-Theuer / 1&1 Internet AG */
 #ifndef MARS_LIB_TIMING_H
 #define MARS_LIB_TIMING_H
 
@@ -65,7 +65,7 @@ struct timing_stats {
 
 extern int report_timing(struct timing_stats *tim, char *str, int maxlen);
 
-#else  // CONFIG_MARS_DEBUG
+#else  /*  CONFIG_MARS_DEBUG */
 
 #define _TIME_STATS(_timing, _stamp1, _stamp2, _CODE)			\
 	((void)_timing, (_stamp1) = (_stamp2) = cpu_clock(raw_smp_processor_id()), _CODE, 0)
@@ -75,7 +75,7 @@ extern int report_timing(struct timing_stats *tim, char *str, int maxlen);
 
 #define report_timing(tim, str, maxlen)   ((void)tim, 0)
 
-#endif // CONFIG_MARS_DEBUG
+#endif /*  CONFIG_MARS_DEBUG */
 
 /* A banning represents some overloaded resource.
  *
@@ -93,7 +93,7 @@ extern int report_timing(struct timing_stats *tim, char *str, int maxlen);
 struct banning {
 	long long ban_last_hit;
 
-	// statistical
+	/*  statistical */
 	int ban_renew_count;
 	int ban_count;
 };
@@ -133,11 +133,11 @@ void banning_reset(struct banning *ban)
 struct threshold {
 	struct banning *thr_ban;
 
-	// tunables
-	int  thr_limit;   // in us
-	int  thr_factor;  // in %
-	int  thr_plus;	  // in us
-	// statistical
+	/*  tunables */
+	int  thr_limit;   /*  in us */
+	int  thr_factor;  /*  in % */
+	int  thr_plus;	  /*  in us */
+	/*  statistical */
 	int thr_triggered;
 	int thr_true_hit;
 };

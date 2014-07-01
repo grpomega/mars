@@ -1,4 +1,4 @@
-// (c) 2010 Thomas Schoebel-Theuer / 1&1 Internet AG
+/*  (c) 2010 Thomas Schoebel-Theuer / 1&1 Internet AG */
 #ifndef MARS_AIO_H
 #define MARS_AIO_H
 
@@ -7,10 +7,10 @@
 
 #include "lib_mapfree.h"
 
-#define AIO_SUBMIT_MAX_LATENCY		1000 //   1 ms
-#define AIO_IO_R_MAX_LATENCY		50000 //  50 ms
-#define AIO_IO_W_MAX_LATENCY		150000 // 150 ms
-#define AIO_SYNC_MAX_LATENCY		150000 // 150 ms
+#define AIO_SUBMIT_MAX_LATENCY		1000 /*    1 ms */
+#define AIO_IO_R_MAX_LATENCY		50000 /*   50 ms */
+#define AIO_IO_W_MAX_LATENCY		150000 /*  150 ms */
+#define AIO_SYNC_MAX_LATENCY		150000 /*  150 ms */
 
 extern struct threshold aio_submit_threshold;
 extern struct threshold aio_io_threshold[2];
@@ -36,7 +36,7 @@ struct aio_mref_aspect {
 
 struct aio_brick {
 	MARS_BRICK(aio);
-	// parameters
+	/*  parameters */
 	bool o_creat;
 	bool o_direct;
 	bool o_fdsync;
@@ -63,17 +63,17 @@ struct aio_threadinfo {
 
 struct aio_output {
 	MARS_OUTPUT(aio);
-	// private
+	/*  private */
 	struct mapfree_info *mf;
 
-	int fd; // FIXME: remove this!
+	int fd; /*  FIXME: remove this! */
 	struct aio_threadinfo tinfo[3];
 
 	aio_context_t ctxp;
 	wait_queue_head_t fdsync_event;
 	bool fdsync_active;
 
-	// statistics
+	/*  statistics */
 	int index;
 	atomic_t total_read_count;
 	atomic_t total_write_count;

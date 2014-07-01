@@ -1,6 +1,6 @@
-// (c) 2010 Thomas Schoebel-Theuer / 1&1 Internet AG
+/*  (c) 2010 Thomas Schoebel-Theuer / 1&1 Internet AG */
 
-// Client brick (just for demonstration)
+/*  Client brick (just for demonstration) */
 
 //#define BRICK_DEBUGGING
 //#define MARS_DEBUGGING
@@ -11,7 +11,7 @@
 
 #include "mars.h"
 
-///////////////////////// own type definitions ////////////////////////
+/************************ own type definitions ***********************/
 
 #include "mars_client.h"
 
@@ -20,7 +20,7 @@
 int mars_client_abort = 10;
 EXPORT_SYMBOL_GPL(mars_client_abort);
 
-///////////////////////// own helper functions ////////////////////////
+/************************ own helper functions ***********************/
 
 static int thread_count;
 
@@ -133,7 +133,7 @@ really_done:
 	return status;
 }
 
-////////////////// own brick / input / output operations //////////////////
+/***************** own brick * input * output operations *****************/
 
 static int client_get_info(struct client_output *output, struct mars_info *info)
 {
@@ -171,7 +171,7 @@ static int client_ref_get(struct client_output *output, struct mref_object *mref
 	if (mref->ref_len > maxlen)
 		mref->ref_len = maxlen;
 
-	if (!mref->ref_data) { // buffered IO
+	if (!mref->ref_data) { /*  buffered IO */
 		struct client_mref_aspect *mref_a = client_mref_get_aspect(output->brick, mref);
 
 		if (!mref_a)
@@ -361,7 +361,7 @@ void _do_resubmit(struct client_output *output)
 		struct list_head *last = output->wait_list.prev;
 		struct list_head *old_start = output->mref_list.next;
 
-#define list_connect __list_del // the original routine has a misleading name: in reality it is more general
+#define list_connect __list_del /*  the original routine has a misleading name: in reality it is more general */
 		list_connect(&output->mref_list, first);
 		list_connect(last, old_start);
 		INIT_LIST_HEAD(&output->wait_list);
@@ -518,7 +518,7 @@ static int sender_thread(void *data)
 
 		status = mars_send_mref(&output->socket, mref);
 		if (unlikely(status < 0)) {
-			// retry submission on next occasion..
+			/*  retry submission on next occasion.. */
 			MARS_WRN("sending failed, status = %d\n", status);
 
 			if (do_kill) {
@@ -585,7 +585,7 @@ done:
 	return status;
 }
 
-//////////////// informational / statistics ///////////////
+/*************** informational * statistics **************/
 
 static
 char *client_statistics(struct client_brick *brick, int verbose)
@@ -616,7 +616,7 @@ void client_reset_statistics(struct client_brick *brick)
 	atomic_set(&output->timeout_count, 0);
 }
 
-//////////////// object / aspect constructors / destructors ///////////////
+/*************** object * aspect constructors * destructors **************/
 
 static int client_mref_aspect_init_fn(struct generic_aspect *_ini)
 {
@@ -638,7 +638,7 @@ static void client_mref_aspect_exit_fn(struct generic_aspect *_ini)
 
 MARS_MAKE_STATICS(client);
 
-////////////////////// brick constructors / destructors ////////////////////
+/********************* brick constructors * destructors *******************/
 
 static int client_brick_construct(struct client_brick *brick)
 {
@@ -673,7 +673,7 @@ static int client_output_destruct(struct client_output *output)
 	return 0;
 }
 
-///////////////////////// static structs ////////////////////////
+/************************ static structs ***********************/
 
 static struct client_brick_ops client_brick_ops = {
 	.brick_switch = client_switch,
@@ -722,7 +722,7 @@ const struct client_brick_type client_brick_type = {
 };
 EXPORT_SYMBOL_GPL(client_brick_type);
 
-////////////////// module init stuff /////////////////////////
+/***************** module init stuff ************************/
 
 struct mars_limiter client_limiter = {
 	.lim_max_rate = 0,

@@ -1,4 +1,4 @@
-// (c) 2010 Thomas Schoebel-Theuer / 1&1 Internet AG
+/*  (c) 2010 Thomas Schoebel-Theuer / 1&1 Internet AG */
 
 //#define BRICK_DEBUGGING
 #define MARS_DEBUGGING
@@ -60,7 +60,7 @@ EXPORT_SYMBOL_GPL(aio_sync_threshold);
 int aio_sync_mode = 2;
 EXPORT_SYMBOL_GPL(aio_sync_mode);
 
-///////////////////////// mmu faking (provisionary) ////////////////////////
+/************************ mmu faking (provisionary) ***********************/
 
 /* Kludge: our kernel threads will have no mm context, but need one
  * for stuff like ioctx_alloc() / aio_setup_ring() etc
@@ -83,9 +83,9 @@ static inline void set_fake(void)
 	if (mm_fake) {
 		MARS_DBG("initialized fake\n");
 		mm_fake_task = current;
-		get_task_struct(current); // paired with put_task_struct()
-		atomic_inc(&mm_fake->mm_count); // paired with mmdrop()
-		atomic_inc(&mm_fake->mm_users); // paired with mmput()
+		get_task_struct(current); /*  paired with put_task_struct() */
+		atomic_inc(&mm_fake->mm_count); /*  paired with mmdrop() */
+		atomic_inc(&mm_fake->mm_users); /*  paired with mmput() */
 	}
 }
 
@@ -136,9 +136,9 @@ static inline void unuse_fake_mm(void)
 	}
 }
 
-///////////////////////// own type definitions ////////////////////////
+/************************ own type definitions ***********************/
 
-////////////////// some helpers //////////////////
+/***************** some helpers *****************/
 
 static inline
 void _enqueue(struct aio_threadinfo *tinfo, struct aio_mref_aspect *mref_a, int prio, bool at_end)
@@ -200,7 +200,7 @@ done:
 	return mref_a;
 }
 
-////////////////// own brick / input / output operations //////////////////
+/***************** own brick * input * output operations *****************/
 
 static
 loff_t get_total_size(struct aio_output *output)
@@ -391,7 +391,7 @@ static void aio_ref_io(struct aio_output *output, struct mref_object *mref)
 	_mref_get(mref);
 	atomic_inc(&mars_global_io_flying);
 
-	// statistics
+	/*  statistics */
 	if (mref->ref_rw) {
 		atomic_inc(&output->total_write_count);
 		atomic_inc(&output->write_count);
@@ -430,7 +430,7 @@ static int aio_submit(struct aio_output *output, struct aio_mref_aspect *mref_a,
 		.aio_buf = (unsigned long)mref->ref_data,
 		.aio_nbytes = mref->ref_len,
 		.aio_offset = mref->ref_pos,
-		// .aio_reqprio = something(mref->ref_prio) field exists, but not yet implemented in kernelspace :(
+		/*  .aio_reqprio = something(mref->ref_prio) field exists, but not yet implemented in kernelspace :( */
 	};
 	struct iocb *iocbp = &iocb;
 	unsigned long long latency;
@@ -515,7 +515,7 @@ void aio_stop_thread(struct aio_output *output, int i, bool do_submit_dummy)
 		MARS_DBG("stopping thread %d ...\n", i);
 		brick_thread_stop_nowait(tinfo->thread);
 
-		// workaround for waking up the receiver thread. TODO: check whether signal handlong could do better.
+		/*  workaround for waking up the receiver thread. TODO: check whether signal handlong could do better. */
 		if (do_submit_dummy) {
 			MARS_DBG("submitting dummy for wakeup %d...\n", i);
 			use_fake_mm();
@@ -524,7 +524,7 @@ void aio_stop_thread(struct aio_output *output, int i, bool do_submit_dummy)
 				unuse_fake_mm();
 		}
 
-		// wait for termination
+		/*  wait for termination */
 		MARS_DBG("waiting for thread %d ...\n", i);
 		wait_event_interruptible_timeout(
 			tinfo->terminate_event,
@@ -600,7 +600,7 @@ int aio_sync_thread(void *data)
 	struct aio_output *output = tinfo->output;
 
 	MARS_DBG("sync thread has started on '%s'.\n", output->brick->brick_path);
-	//set_user_nice(current, -20);
+	/* set_user_nice(current, -20); */
 
 	while (!brick_thread_should_stop() || atomic_read(&tinfo->queued_sum) > 0) {
 		LIST_HEAD(tmp_list);
@@ -619,7 +619,7 @@ int aio_sync_thread(void *data)
 			struct list_head *start = &tinfo->mref_list[i];
 
 			if (!list_empty(start)) {
-				// move over the whole list
+				/*  move over the whole list */
 				list_replace_init(start, &tmp_list);
 				atomic_sub(tinfo->queued[i], &tinfo->queued_sum);
 				tinfo->queued[i] = 0;
@@ -684,7 +684,7 @@ static int aio_event_thread(void *data)
 			int err = events[i].res;
 
 			if (!mref_a)
-				continue; // this was a dummy request
+				continue; /*  this was a dummy request */
 
 			mref_a->di.dirty_stage = 2;
 			mref = mref_a->object;
@@ -696,7 +696,7 @@ static int aio_event_thread(void *data)
 			   && mref->ref_rw != READ
 			   && !mref->ref_skip_sync
 			   && !mref_a->resubmit++) {
-				// workaround for non-implemented AIO FSYNC operation
+				/*  workaround for non-implemented AIO FSYNC operation */
 				if (output->mf &&
 				    output->mf->mf_filp &&
 				    output->mf->mf_filp->f_op &&
@@ -893,7 +893,7 @@ static int aio_submit_thread(void *data)
 
 		mref->ref_total_size = get_total_size(output);
 
-		// check for reads crossing the EOF boundary (special case)
+		/*  check for reads crossing the EOF boundary (special case) */
 		if (mref->ref_timeout > 0 &&
 		    !mref->ref_rw &&
 		    mref->ref_pos + mref->ref_len > mref->ref_total_size) {
@@ -967,7 +967,7 @@ static int aio_get_info(struct aio_output *output, struct mars_info *info)
 	return 0;
 }
 
-//////////////// informational / statistics ///////////////
+/*************** informational * statistics **************/
 
 static noinline
 char *aio_statistics(struct aio_brick *brick, int verbose)
@@ -1056,7 +1056,7 @@ void aio_reset_statistics(struct aio_brick *brick)
 	}
 }
 
-//////////////// object / aspect constructors / destructors ///////////////
+/*************** object * aspect constructors * destructors **************/
 
 static int aio_mref_aspect_init_fn(struct generic_aspect *_ini)
 {
@@ -1078,7 +1078,7 @@ static void aio_mref_aspect_exit_fn(struct generic_aspect *_ini)
 
 MARS_MAKE_STATICS(aio);
 
-////////////////////// brick constructors / destructors ////////////////////
+/********************* brick constructors * destructors *******************/
 
 static int aio_brick_construct(struct aio_brick *brick)
 {
@@ -1180,7 +1180,7 @@ static int aio_output_destruct(struct aio_output *output)
 	return 0;
 }
 
-///////////////////////// static structs ////////////////////////
+/************************ static structs ***********************/
 
 static struct aio_brick_ops aio_brick_ops = {
 	.brick_switch = aio_switch,
@@ -1229,7 +1229,7 @@ const struct aio_brick_type aio_brick_type = {
 };
 EXPORT_SYMBOL_GPL(aio_brick_type);
 
-////////////////// module init stuff /////////////////////////
+/***************** module init stuff ************************/
 
 int __init init_mars_aio(void)
 {

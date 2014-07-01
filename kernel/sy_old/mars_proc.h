@@ -1,4 +1,4 @@
-// (c) 2010 Thomas Schoebel-Theuer / 1&1 Internet AG
+/*  (c) 2010 Thomas Schoebel-Theuer / 1&1 Internet AG */
 #ifndef MARS_PROC_H
 #define MARS_PROC_H
 
@@ -8,9 +8,9 @@ extern mars_info_fn mars_info;
 
 extern int min_free_kbytes;
 
-/////////////////////////////////////////////////////////////////////////
+/***********************************************************************/
 
-// init
+/*  init */
 
 extern int init_mars_proc(void);
 extern void exit_mars_proc(void);

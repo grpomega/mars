@@ -1,16 +1,16 @@
-// (c) 2010 Thomas Schoebel-Theuer / 1&1 Internet AG
+/*  (c) 2010 Thomas Schoebel-Theuer / 1&1 Internet AG */
 #ifndef MARS_H
 #define MARS_H
 
 #include <linux/semaphore.h>
 #include <linux/rwsem.h>
 
-//	remove_this
+/* 	remove_this */
 
-// check the Kconfig environment
+/*  check the Kconfig environment */
 
 #ifndef CONFIG_MARS_MODULE
-// when unsure, include faked config file
+/*  when unsure, include faked config file */
 #include "mars_config.h"
 #ifndef CONFIG_SMP
 #warning CONFIG_SMP is not set -- are you SURE???
@@ -36,10 +36,10 @@
 #error Fixme: CONFIG_DEBUG_SG does not work (fix the bio offset calculation)
 #endif
 
-//	end_remove_this
-/////////////////////////////////////////////////////////////////////////
+/* 	end_remove_this */
+/***********************************************************************/
 
-// include the generic brick infrastructure
+/*  include the generic brick infrastructure */
 
 #define OBJ_TYPE_MREF			0
 #define OBJ_TYPE_MAX			1
@@ -49,9 +49,9 @@
 #include "lamport.h"
 #include "lib_timing.h"
 
-/////////////////////////////////////////////////////////////////////////
+/***********************************************************************/
 
-// MARS-specific debugging helpers
+/*  MARS-specific debugging helpers */
 
 #define _MARS_MSG(_class, _dump, _fmt, _args...)			\
 	brick_say(_class, _dump, "MARS", __BASE_FILE__, __LINE__, __func__, _fmt, ##_args)
@@ -67,16 +67,16 @@
 #define MARS_DBG(_args...) /**/
 #endif
 
-/////////////////////////////////////////////////////////////////////////
+/***********************************************************************/
 
-// MARS-specific definitions
+/*  MARS-specific definitions */
 
 #define MARS_PRIO_HIGH			-1
-#define MARS_PRIO_NORMAL		0 // this is automatically used by memset()
+#define MARS_PRIO_NORMAL		0 /*  this is automatically used by memset() */
 #define MARS_PRIO_LOW			1
 #define MARS_PRIO_NR			3
 
-// object stuff
+/*  object stuff */
 
 /* mref */
 
@@ -111,16 +111,16 @@ struct mref_object {
 	MREF_OBJECT(mref);
 };
 
-// internal helper structs
+/*  internal helper structs */
 
 struct mars_info {
 	loff_t current_size;
 
-	int tf_align;	 // transfer alignment constraint
-	int tf_min_size; // transfer is only possible in multiples of this
+	int tf_align;	 /*  transfer alignment constraint */
+	int tf_min_size; /*  transfer is only possible in multiples of this */
 };
 
-// brick stuff
+/*  brick stuff */
 
 #define MARS_BRICK(BRITYPE)						\
 	GENERIC_BRICK(BRITYPE);						\
@@ -171,7 +171,7 @@ struct mars_output {
 	void (*mref_put)(struct BRITYPE##_output *output, struct mref_object *mref);\
 	/* this comment is for keeping TRAILING_SEMICOLON happy */
 
-// all non-extendable types
+/*  all non-extendable types */
 
 #define _MARS_TYPES(BRITYPE)						\
 									\
@@ -211,15 +211,15 @@ extern int init_mars_##BRITYPE(void);					\
 extern void exit_mars_##BRITYPE(void);					\
 /* this comment is for keeping TRAILING_SEMICOLON happy */
 
-// instantiate pseudo base-classes
+/*  instantiate pseudo base-classes */
 
 DECLARE_OBJECT_FUNCTIONS(mref);
 _MARS_TYPES(mars);
 DECLARE_ASPECT_FUNCTIONS(mars, mref);
 
-/////////////////////////////////////////////////////////////////////////
+/***********************************************************************/
 
-// MARS-specific helpers
+/*  MARS-specific helpers */
 
 #define MARS_MAKE_STATICS(BRITYPE)					\
 									\
@@ -244,7 +244,7 @@ extern const struct meta mars_info_meta[];
 extern const struct meta mars_mref_meta[];
 extern const struct meta mars_timespec_meta[];
 
-/////////////////////////////////////////////////////////////////////////
+/***********************************************************************/
 
 /* Some minimal upcalls from generic IO layer to the strategy layer.
  * TODO: abstract away.
@@ -261,7 +261,7 @@ extern void (*_mars_remote_trigger)(void);
 #define mars_remote_trigger()						\
 do { if (_mars_remote_trigger) { MARS_DBG("remote_trigger...\n"); _mars_remote_trigger(); } } while (0)
 
-/////////////////////////////////////////////////////////////////////////
+/***********************************************************************/
 
 /* Some global stuff.
  */
@@ -273,7 +273,7 @@ extern atomic_t mars_global_io_flying;
 extern int mars_throttle_start;
 extern int mars_throttle_end;
 
-/////////////////////////////////////////////////////////////////////////
+/***********************************************************************/
 
 /* Some special brick types for avoidance of cyclic references.
  *
@@ -286,7 +286,7 @@ extern const struct generic_brick_type *_bio_brick_type;
 extern const struct generic_brick_type *_aio_brick_type;
 extern const struct generic_brick_type *_sio_brick_type;
 
-/////////////////////////////////////////////////////////////////////////
+/***********************************************************************/
 
 /* Crypto stuff
  */
@@ -295,9 +295,9 @@ extern int mars_digest_size;
 extern void mars_digest(unsigned char *digest, void *data, int len);
 extern void mref_checksum(struct mref_object *mref);
 
-/////////////////////////////////////////////////////////////////////////
+/***********************************************************************/
 
-// init
+/*  init */
 
 extern int init_mars(void);
 extern void exit_mars(void);
