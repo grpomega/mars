@@ -39,7 +39,7 @@ EXPORT_SYMBOL_GPL(_generic_output_exit);
 
 int generic_brick_init(const struct generic_brick_type *type, struct generic_brick *brick)
 {
-	brick->aspect_context.brick_index = get_nr();
+	brick->aspect_context.brick_index = get_brick_nr();
 	brick->type = type;
 	brick->ops = type->master_ops;
 	brick->nr_inputs = 0;
@@ -304,7 +304,7 @@ static char *nr_table;
 int nr_max = 256;
 EXPORT_SYMBOL_GPL(nr_max);
 
-int get_nr(void)
+int get_brick_nr(void)
 {
 	char *new;
 	int nr;
@@ -326,7 +326,7 @@ int get_nr(void)
 		nr_max <<= 1;
 	}
 }
-EXPORT_SYMBOL_GPL(get_nr);
+EXPORT_SYMBOL_GPL(get_brick_nr);
 
 void put_nr(int nr)
 {
