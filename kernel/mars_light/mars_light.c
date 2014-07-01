@@ -606,7 +606,6 @@ int _set_client_params(struct xio_brick *_brick, void *private)
 	return 1;
 }
 
-
 static
 int _set_aio_params(struct xio_brick *_brick, void *private)
 {

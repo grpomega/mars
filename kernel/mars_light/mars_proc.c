@@ -1,6 +1,5 @@
 /*  (c) 2011 Thomas Schoebel-Theuer / 1&1 Internet AG */
 
-
 #include <linux/kernel.h>
 #include <linux/module.h>
 #include <linux/string.h>

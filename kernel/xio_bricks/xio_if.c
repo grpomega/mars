@@ -4,7 +4,6 @@
  * 1 Input, 0 Outputs.
  */
 
-
 #define REQUEST_MERGING
 #define ALWAYS_UNPLUG			true
 #define PREFETCH_LEN			PAGE_SIZE

@@ -4,7 +4,6 @@
 #include <linux/module.h>
 #include <linux/bio.h>
 
-
 #include "lib_log.h"
 
 atomic_t global_aio_flying = ATOMIC_INIT(0);

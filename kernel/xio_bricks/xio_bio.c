@@ -4,7 +4,6 @@
 
 /*  Bio brick (interface to blkdev IO via kernel bios) */
 
-
 #include <linux/kernel.h>
 #include <linux/module.h>
 #include <linux/string.h>
