@@ -13,8 +13,6 @@
  * even by the silliest type of accident!
  */
 
-//#define BRICK_DEBUGGING
-//#define XIO_DEBUGGING
 
 #include <linux/kernel.h>
 #include <linux/module.h>

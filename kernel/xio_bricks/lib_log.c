@@ -4,8 +4,6 @@
 #include <linux/module.h>
 #include <linux/bio.h>
 
-//#define BRICK_DEBUGGING
-//#define XIO_DEBUGGING
 
 #include "lib_log.h"
 
