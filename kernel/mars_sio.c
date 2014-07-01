@@ -35,12 +35,14 @@ static int sio_ref_get(struct sio_output *output, struct mref_object *mref)
 	file = output->filp;
 	if (file) {
 		loff_t total_size = i_size_read(file->f_mapping->host);
+
 		mref->ref_total_size = total_size;
 		/* Only check reads.
 		 * Writes behind EOF are always allowed (sparse files)
 		 */
 		if (!mref->ref_may_write) {
 			loff_t len = total_size - mref->ref_pos;
+
 			if (unlikely(len <= 0)) {
 				/* Special case: allow reads starting _exactly_ at EOF when a timeout is specified.
 				 */
@@ -60,6 +62,7 @@ static int sio_ref_get(struct sio_output *output, struct mref_object *mref)
 	 */
 	if (!mref->ref_data) {
 		struct sio_mref_aspect *mref_a = sio_mref_get_aspect(output->brick, mref);
+
 		if (unlikely(!mref_a))
 			return -EILSEQ;
 		if (unlikely(mref->ref_len <= 0)) {
@@ -106,6 +109,7 @@ int write_aops(struct sio_output *output, struct mref_object *mref)
 	void *data = mref->ref_data;
 	int  len = mref->ref_len;
 	int ret = 0;
+
 	mm_segment_t oldfs = get_fs();
 	set_fs(get_ds());
 	ret = vfs_write(file, data, len, &pos);
@@ -113,12 +117,13 @@ int write_aops(struct sio_output *output, struct mref_object *mref)
 	return ret;
 }
 
-static 
+static
 int read_aops(struct sio_output *output, struct mref_object *mref)
 {
 	loff_t pos = mref->ref_pos;
 	int len = mref->ref_len;
 	int ret = -EIO;
+
 	mm_segment_t oldfs;
 
 	oldfs = get_fs();
@@ -136,6 +141,7 @@ static void sync_file(struct sio_output *output)
 {
 	struct file *file = output->filp;
 	int ret;
+
 #if defined(S_BIAS) || (defined(RHEL_MAJOR) && (RHEL_MAJOR < 7))
 	ret = vfs_fsync(file, file->f_path.dentry, 1);
 #else
@@ -154,7 +160,12 @@ void _complete(struct sio_output *output, struct mref_object *mref, int err)
 	_mref_check(mref);
 
 	if (err < 0) {
-		MARS_ERR("IO error %d at pos=%lld len=%d (mref=%p ref_data=%p)\n", err, mref->ref_pos, mref->ref_len, mref, mref->ref_data);
+		MARS_ERR("IO error %d at pos=%lld len=%d (mref=%p ref_data=%p)\n",
+			err,
+			mref->ref_pos,
+			mref->ref_len,
+			mref,
+			mref->ref_data);
 	} else {
 		mref_checksum(mref);
 		mref->ref_flags |= MREF_UPTODATE;
@@ -296,6 +307,7 @@ static int sio_thread(void *data)
 static int sio_get_info(struct sio_output *output, struct mars_info *info)
 {
 	struct file *file = output->filp;
+
 	if (unlikely(!file || !file->f_mapping || !file->f_mapping->host))
 		return -EINVAL;
 
@@ -314,14 +326,15 @@ char *sio_statistics(struct sio_brick *brick, int verbose)
 	struct sio_output *output = brick->outputs[0];
 	char *res = brick_string_alloc(1024);
 	int queue_sum = 0;
-	int fly_sum   = 0;
+	int fly_sum = 0;
 	int total_sum = 0;
 	int i;
 
 	for (i = 1; i <= WITH_THREAD; i++) {
 		struct sio_threadinfo *tinfo = &output->tinfo[i];
+
 		queue_sum += atomic_read(&tinfo->queue_count);
-		fly_sum   += atomic_read(&tinfo->fly_count);
+		fly_sum += atomic_read(&tinfo->fly_count);
 		total_sum += atomic_read(&tinfo->total_count);
 	}
 
@@ -342,8 +355,10 @@ void sio_reset_statistics(struct sio_brick *brick)
 {
 	struct sio_output *output = brick->outputs[0];
 	int i;
+
 	for (i = 0; i <= WITH_THREAD; i++) {
 		struct sio_threadinfo *tinfo = &output->tinfo[i];
+
 		atomic_set(&tinfo->total_count, 0);
 	}
 }
@@ -352,14 +367,16 @@ void sio_reset_statistics(struct sio_brick *brick)
 
 static int sio_mref_aspect_init_fn(struct generic_aspect *_ini)
 {
-	struct sio_mref_aspect *ini = (void*)_ini;
+	struct sio_mref_aspect *ini = (void *)_ini;
+
 	INIT_LIST_HEAD(&ini->io_head);
 	return 0;
 }
 
 static void sio_mref_aspect_exit_fn(struct generic_aspect *_ini)
 {
-	struct sio_mref_aspect *ini = (void*)_ini;
+	struct sio_mref_aspect *ini = (void *)_ini;
+
 	(void)ini;
 	CHECK_HEAD_EMPTY(&ini->io_head);
 }
@@ -379,6 +396,7 @@ static int sio_switch(struct sio_brick *brick)
 	struct sio_output *output = brick->outputs[0];
 	const char *path = output->brick->brick_path;
 	int prot = 0600;
+
 	mm_segment_t oldfs;
 	int status = 0;
 
@@ -395,7 +413,7 @@ static int sio_switch(struct sio_brick *brick)
 			MARS_INF("using O_DIRECT on %s\n", path);
 		}
 
-		mars_power_led_off((void*)brick, false);
+		mars_power_led_off((void *)brick, false);
 
 		// TODO: convert to mapfree infrastructure
 
@@ -429,14 +447,16 @@ static int sio_switch(struct sio_brick *brick)
 				goto done;
 			}
 		}
-		mars_power_led_on((void*)brick, true);
+		mars_power_led_on((void *)brick, true);
 	}
 done:
 	if (unlikely(status < 0) || !brick->power.button) {
 		int index;
-		mars_power_led_on((void*)brick, false);
+
+		mars_power_led_on((void *)brick, false);
 		for (index = 0; index <= WITH_THREAD; index++) {
 			struct sio_threadinfo *tinfo = &output->tinfo[index];
+
 			if (!tinfo->thread)
 				continue;
 			MARS_DBG("stopping thread %d\n", index);
@@ -448,7 +468,7 @@ done:
 			filp_close(output->filp, NULL);
 			output->filp = NULL;
 		}
-		mars_power_led_off((void*)brick, true);
+		mars_power_led_off((void *)brick, true);
 	}
 	return status;
 }
@@ -460,6 +480,7 @@ static int sio_output_construct(struct sio_output *output)
 	spin_lock_init(&output->g_lock);
 	for (index = 0; index <= WITH_THREAD; index++) {
 		struct sio_threadinfo *tinfo = &output->tinfo[index];
+
 		tinfo->output = output;
 		spin_lock_init(&tinfo->lock);
 		init_waitqueue_head(&tinfo->event);
@@ -528,7 +549,7 @@ EXPORT_SYMBOL_GPL(sio_brick_type);
 int __init init_mars_sio(void)
 {
 	MARS_INF("init_sio()\n");
-	_sio_brick_type = (void*)&sio_brick_type;
+	_sio_brick_type = (void *)&sio_brick_type;
 	return sio_register_brick_type();
 }
 

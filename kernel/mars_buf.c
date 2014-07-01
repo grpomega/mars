@@ -25,7 +25,7 @@
 
 #include "mars_buf.h"
 
-#define PRE_ALLOC 8
+#define PRE_ALLOC			8
 
 ///////////////////////// own helper functions ////////////////////////
 
@@ -34,6 +34,7 @@ int buf_hash_fn(loff_t base_index)
 {
 	// simple and stupid
 	loff_t tmp;
+
 	tmp = base_index ^ (base_index / MARS_BUF_HASH_MAX);
 	//tmp ^= tmp / (MARS_BUF_HASH_MAX * MARS_BUF_HASH_MAX);
 	return ((unsigned)tmp) % MARS_BUF_HASH_MAX;
@@ -45,7 +46,7 @@ struct buf_head *_hash_find_insert(struct buf_brick *brick, loff_t base_index, s
 
 	int hash = buf_hash_fn(base_index);
 	spinlock_t *lock = &brick->cache_anchors[hash].hash_lock;
-	struct list_head *start	= &brick->cache_anchors[hash].hash_anchor;
+	struct list_head *start = &brick->cache_anchors[hash].hash_anchor;
 	struct list_head *tmp;
 	int count = 0;
 
@@ -53,9 +54,14 @@ struct buf_head *_hash_find_insert(struct buf_brick *brick, loff_t base_index, s
 
 	for (tmp = start->next; tmp != start; tmp = tmp->next) {
 		struct buf_head *res;
+
 #if 1
 		if (!tmp) {
-			MARS_ERR("tmp is NULL! brick = %p base_index = %lld hash = %d new = %p\n", brick, base_index, hash, new);
+			MARS_ERR("tmp is NULL! brick = %p base_index = %lld hash = %d new = %p\n",
+				brick,
+				base_index,
+				hash,
+				new);
 			//dump_stack();
 			spin_unlock(lock);
 			return NULL;
@@ -64,6 +70,7 @@ struct buf_head *_hash_find_insert(struct buf_brick *brick, loff_t base_index, s
 #if 1
 		{
 			static int max;
+
 			if (++count > max) {
 				max = count;
 				if (!(max % 10)) {
@@ -201,7 +208,7 @@ struct buf_head *_alloc_bf(struct buf_brick *brick)
 {
 	struct buf_head *bf = brick_zmem_alloc(sizeof(struct buf_head));
 
-	bf->bf_data = (void*)__get_free_pages(GFP_BRICK, brick->backing_order);
+	bf->bf_data = (void *)__get_free_pages(GFP_BRICK, brick->backing_order);
 
 	atomic_inc(&brick->alloc_count);
 
@@ -229,12 +236,14 @@ void _prune_cache(struct buf_brick *brick, int max_count)
 {
 	struct buf_head *bf;
 	int i;
+
 	for (i = 0; i < LIST_MAX; i++) {
 		while (atomic_read(&brick->alloc_count) > max_count) {
 			bf = _fetch_bf_list(brick, i, 0);
 			if (bf) {
 				if (i > 0) {
 					bool status;
+
 					status = _remove_hash(brick, bf);
 					if (unlikely(!status)) {
 						MARS_INF("bf %p is in use\n", bf);
@@ -251,11 +260,13 @@ static inline
 struct buf_head *_fetch_bf(struct buf_brick *brick)
 {
 	struct buf_head *bf = NULL;
+
 	while (!bf) {
 		static const int ages[LIST_MAX] = {
 			[LIST_FORGET] = HZ,
 		};
 		int i;
+
 		for (i = 0; i < LIST_MAX; i++) {
 			bf = _fetch_bf_list(brick, i, ages[i]);
 			if (bf)
@@ -263,9 +274,10 @@ struct buf_head *_fetch_bf(struct buf_brick *brick)
 		}
 		bf = _alloc_bf(brick);
 		continue;
-	found:
+found:
 		if (i > 0) {
 			bool status = _remove_hash(brick, bf);
+
 			if (unlikely(!status)) {
 				MARS_INF("bf %p is in use\n", bf);
 				bf = NULL; // forget it => _bf_put() must fix it
@@ -281,6 +293,7 @@ void __pre_alloc_bf(struct buf_brick *brick, int max)
 {
 	while (max-- > 0) {
 		struct buf_head *bf = _alloc_bf(brick);
+
 		INIT_LIST_HEAD(&bf->bf_list_head);
 		_add_bf_list(brick, bf, LIST_FREE, true);
 	}
@@ -350,6 +363,7 @@ static inline int _get_info(struct buf_brick *brick)
 {
 	struct buf_input *input = brick->inputs[0];
 	int status = GENERIC_INPUT_CALL(input, mars_get_info, &brick->base_info);
+
 	if (status >= 0)
 		brick->got_info = true;
 	return status;
@@ -360,6 +374,7 @@ static inline int _get_info(struct buf_brick *brick)
 static int buf_get_info(struct buf_output *output, struct mars_info *info)
 {
 	struct buf_input *input = output->brick->inputs[0];
+
 	return GENERIC_INPUT_CALL(input, mars_get_info, info);
 }
 
@@ -417,6 +432,7 @@ again:
 	if (bf) {
 #if 1
 		loff_t end_pos = bf->bf_pos + brick->backing_size;
+
 		if (mref->ref_pos < bf->bf_pos || mref->ref_pos >= end_pos) {
 			MARS_ERR("hash corruption. %lld not in (%lld ... %lld)\n", mref->ref_pos, bf->bf_pos, end_pos);
 		}
@@ -443,7 +459,7 @@ again:
 			goto done;
 #if 1
 		// dont initialize new->bf_data
-		memset(((void*)new) + sizeof(void*), 0, sizeof(struct buf_head) - sizeof(void*));
+		memset(((void *)new) + sizeof(void *), 0, sizeof(struct buf_head) - sizeof(void *));
 #else
 		new->bf_flags = 0;
 		new->bf_error = 0;
@@ -477,9 +493,11 @@ again:
 		 */
 		if (brick->optimize_chains) {
 			struct buf_head *prev_bf;
+
 			prev_bf = _hash_find_insert(brick, new->bf_base_index - 1, NULL);
 			if (prev_bf) {
 				int chainlen = atomic_read(&prev_bf->bf_chain_len);
+
 				atomic_set(&new->bf_chain_len, chainlen + 1);
 				atomic_inc(&brick->chain_count);
 				prev_bf->bf_chain_detected = true;
@@ -518,6 +536,7 @@ static void _buf_ref_put(struct buf_output *output, struct buf_mref_aspect *mref
 	bf = mref_a->rfa_bf;
 	if (!bf) {
 		struct buf_brick *brick = output->brick;
+
 		GENERIC_INPUT_CALL(brick->inputs[0], mref_put, mref);
 		goto out_return;
 	}
@@ -535,6 +554,7 @@ out_return:;
 static void buf_ref_put(struct buf_output *output, struct mref_object *mref)
 {
 	struct buf_mref_aspect *mref_a;
+
 	mref_a = buf_mref_get_aspect(output->brick, mref);
 	if (unlikely(!mref_a)) {
 		MARS_FAT("cannot get aspect\n");
@@ -546,13 +566,20 @@ out_return:;
 
 static void _buf_endio(struct generic_callback *cb);
 
-static int _buf_make_io(struct buf_brick *brick, struct buf_head *bf, void *start_data, loff_t start_pos, int start_len, int rw)
+static int _buf_make_io(struct buf_brick *brick,
+	struct buf_head *bf,
+	void *start_data,
+	loff_t start_pos,
+	int start_len,
+	int rw)
 {
 	struct buf_input *input;
 	int status = EINVAL;
+
 #if 1
 	loff_t bf_end = bf->bf_pos + brick->backing_size;
 	loff_t end_pos;
+
 	if (start_pos < bf->bf_pos || start_pos >= bf_end) {
 		MARS_ERR("bad start_pos %llu (%llu ... %llu)\n", start_pos, bf->bf_pos, bf_end);
 		goto done;
@@ -646,8 +673,10 @@ static void _buf_endio(struct generic_callback *cb)
 	loff_t start_pos = 0;
 	int    start_len = 0;
 	int error = cb->cb_error;
+
 #if 1
 	int count = 0;
+
 #endif
 
 	LAST_CALLBACK(cb);
@@ -689,6 +718,7 @@ static void _buf_endio(struct generic_callback *cb)
 	 */
 	if (!list_empty(&bf->bf_io_pending_anchor)) {
 		struct list_head *next = bf->bf_io_pending_anchor.next;
+
 		list_del_init(&bf->bf_io_pending_anchor);
 		list_add_tail(&tmp, next);
 	}
@@ -700,7 +730,10 @@ static void _buf_endio(struct generic_callback *cb)
 	 * IO ordering semantics.
 	 */
 	while (!list_empty(&bf->bf_postpone_anchor)) {
-		struct buf_mref_aspect *mref_a = container_of(bf->bf_postpone_anchor.next, struct buf_mref_aspect, rfa_pending_head);
+		struct buf_mref_aspect *mref_a = container_of(bf->bf_postpone_anchor.next,
+			struct buf_mref_aspect,
+
+			rfa_pending_head);
 		struct mref_object *mref = mref_a->object;
 
 		if (mref_a->rfa_bf != bf) {
@@ -731,6 +764,7 @@ static void _buf_endio(struct generic_callback *cb)
 			// another time: flush larger parts
 			loff_t start_diff = mref->ref_pos - start_pos;
 			loff_t end_diff;
+
 			if (start_diff < 0) {
 				start_data += start_diff;
 				start_pos += start_diff;
@@ -828,6 +862,7 @@ static void buf_ref_io(struct buf_output *output, struct mref_object *mref)
 
 	if (mref->ref_rw != READ) {
 		loff_t end;
+
 		if (unlikely(mref->ref_may_write == READ)) {
 			MARS_ERR("sorry, you have forgotten to set ref_may_write\n");
 			goto callback;
@@ -846,8 +881,26 @@ static void buf_ref_io(struct buf_output *output, struct mref_object *mref)
 		unsigned long hit = atomic_read(&brick->hit_count);
 		unsigned long miss = atomic_read(&brick->miss_count);
 		unsigned long perc = hit * 100 * 100 / (hit + miss);
+
 		brick->last_jiffies = jiffies;
-		MARS_INF("BUF %p STATISTICS: alloc=%d hashed=%d free=%d forget=%d lru=%d io_pending=%d hit=%lu (%lu.%02lu%%) miss=%lu collisions=%d opt=%d chain=%d post=%d write=%d io=%d\n", brick, atomic_read(&brick->alloc_count), atomic_read(&brick->hashed_count), atomic_read(&brick->list_count[LIST_FREE]), atomic_read(&brick->list_count[LIST_FORGET]), atomic_read(&brick->list_count[LIST_LRU]), atomic_read(&brick->nr_io_pending), hit, perc / 100, perc % 100, miss, atomic_read(&brick->nr_collisions), atomic_read(&brick->opt_count), atomic_read(&brick->chain_count), atomic_read(&brick->post_count), atomic_read(&brick->write_count), atomic_read(&brick->io_count));
+		MARS_INF("BUF %p STATISTICS: alloc=%d hashed=%d free=%d forget=%d lru=%d io_pending=%d hit=%lu (%lu.%02lu%%) miss=%lu collisions=%d opt=%d chain=%d post=%d write=%d io=%d\n",
+			brick,
+			atomic_read(&brick->alloc_count),
+			atomic_read(&brick->hashed_count),
+			atomic_read(&brick->list_count[LIST_FREE]),
+			atomic_read(&brick->list_count[LIST_FORGET]),
+			atomic_read(&brick->list_count[LIST_LRU]),
+			atomic_read(&brick->nr_io_pending),
+			hit,
+			perc / 100,
+			perc % 100,
+			miss,
+			atomic_read(&brick->nr_collisions),
+			atomic_read(&brick->opt_count),
+			atomic_read(&brick->chain_count),
+			atomic_read(&brick->post_count),
+			atomic_read(&brick->write_count),
+			atomic_read(&brick->io_count));
 	}
 #endif
 
@@ -879,7 +932,7 @@ static void buf_ref_io(struct buf_output *output, struct mref_object *mref)
 			start_pos = mref->ref_pos;
 			start_len = mref->ref_len;
 #else // only for testing: write the full buffer
-			start_data = (void*)((unsigned long)mref->ref_data & ~(unsigned long)(brick->backing_size - 1));
+			start_data = (void *)((unsigned long)mref->ref_data & ~(unsigned long)(brick->backing_size - 1));
 			start_pos = mref->ref_pos & ~(loff_t)(brick->backing_size - 1);
 			start_len = brick->backing_size;
 #endif
@@ -907,7 +960,7 @@ static void buf_ref_io(struct buf_output *output, struct mref_object *mref)
 			bf->bf_error = 0;
 
 			// always read the whole buffer.
-			start_data = (void*)((unsigned long)mref->ref_data & ~(unsigned long)(brick->backing_size - 1));
+			start_data = (void *)((unsigned long)mref->ref_data & ~(unsigned long)(brick->backing_size - 1));
 			start_pos = mref->ref_pos & ~(loff_t)(brick->backing_size - 1);
 			start_len = brick->backing_size;
 		}
@@ -965,7 +1018,8 @@ out_return:;
 
 static int buf_mref_aspect_init_fn(struct generic_aspect *_ini)
 {
-	struct buf_mref_aspect *ini = (void*)_ini;
+	struct buf_mref_aspect *ini = (void *)_ini;
+
 	ini->rfa_bf = NULL;
 	INIT_LIST_HEAD(&ini->rfa_pending_head);
 	//INIT_LIST_HEAD(&ini->tmp_head);
@@ -974,7 +1028,8 @@ static int buf_mref_aspect_init_fn(struct generic_aspect *_ini)
 
 static void buf_mref_aspect_exit_fn(struct generic_aspect *_ini)
 {
-	struct buf_mref_aspect *ini = (void*)_ini;
+	struct buf_mref_aspect *ini = (void *)_ini;
+
 	(void)ini;
 #if 1
 	CHECK_HEAD_EMPTY(&ini->rfa_pending_head);
@@ -989,6 +1044,7 @@ MARS_MAKE_STATICS(buf);
 static int buf_brick_construct(struct buf_brick *brick)
 {
 	int i;
+
 	brick->backing_order = 0;
 	brick->backing_size = PAGE_SIZE;
 	brick->max_count = 32;

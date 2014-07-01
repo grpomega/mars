@@ -6,8 +6,10 @@ struct usebuf_mref_aspect {
 	GENERIC_ASPECT(mref);
 	struct usebuf_mref_aspect *sub_mref_a;
 	struct usebuf_input *input;
+
 #if 1
 	int yyy;
+
 #endif
 };
 

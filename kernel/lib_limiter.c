@@ -5,7 +5,7 @@
 #include <linux/kernel.h>
 #include <linux/module.h>
 
-#define LIMITER_TIME_RESOLUTION NSEC_PER_SEC
+#define LIMITER_TIME_RESOLUTION		NSEC_PER_SEC
 
 int mars_limit(struct mars_limiter *lim, int amount)
 {
@@ -19,6 +19,7 @@ int mars_limit(struct mars_limiter *lim, int amount)
 	 */
 	while (lim != NULL) {
 		long long window = now - lim->lim_stamp;
+
 		/* Sometimes, raw CPU clocks may do weired things...
 		 * Smaller windows in the denominator than 1s could fake unrealistic rates.
 		 */
@@ -56,6 +57,7 @@ int mars_limit(struct mars_limiter *lim, int amount)
 			// limit exceeded?
 			if (lim->lim_max_rate > 0 && rate > lim->lim_max_rate) {
 				int this_delay = (window * rate / lim->lim_max_rate - window) / (LIMITER_TIME_RESOLUTION / 1000);
+
 				// compute maximum
 				if (this_delay > delay && this_delay > 0)
 					delay = this_delay;
@@ -66,6 +68,7 @@ int mars_limit(struct mars_limiter *lim, int amount)
 			window -= lim->lim_min_window * (LIMITER_TIME_RESOLUTION / 1000);
 			if (window > 0) {
 				long long used_up = (long long)lim->lim_rate * window / LIMITER_TIME_RESOLUTION;
+
 				if (used_up > 0) {
 					lim->lim_stamp += window;
 					lim->lim_accu -= used_up;
@@ -89,6 +92,7 @@ EXPORT_SYMBOL_GPL(mars_limit);
 void mars_limit_sleep(struct mars_limiter *lim, int amount)
 {
 	int sleep = mars_limit(lim, amount);
+
 	if (sleep > 0) {
 		if (unlikely(lim->lim_max_delay <= 0))
 			lim->lim_max_delay = 1000;

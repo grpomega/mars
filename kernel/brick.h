@@ -8,18 +8,18 @@
 #include <linux/kthread.h>
 
 #include <linux/atomic.h>
-//      remove_this
+//	remove_this
 
 #ifndef CONFIG_MARS_MODULE
 // when unsure, include faked config file
 #include "mars_config.h"
 #endif
-//      end_remove_this
+//	end_remove_this
 
 #include "brick_say.h"
 #include "meta.h"
 
-#define MAX_BRICK_TYPES 64
+#define MAX_BRICK_TYPES			64
 
 #define brick_msleep(msecs) _brick_msleep(msecs, false)
 extern int _brick_msleep(int msecs, bool shorten);
@@ -31,13 +31,13 @@ extern int _brick_msleep(int msecs, bool shorten);
 
 #define SAFE_STR(str) ((str) ? (str) : "NULL")
 
-#define _BRICK_MSG(_class, _dump, _fmt, _args...)		\
+#define _BRICK_MSG(_class, _dump, _fmt, _args...)			\
 	brick_say(_class, _dump, "BRICK", __BASE_FILE__, __LINE__, __func__, _fmt, ##_args)
 
 #define BRICK_FAT(_fmt, _args...) _BRICK_MSG(SAY_FATAL, true,  _fmt, ##_args)
 #define BRICK_ERR(_fmt, _args...) _BRICK_MSG(SAY_ERROR, false, _fmt, ##_args)
-#define BRICK_WRN(_fmt, _args...) _BRICK_MSG(SAY_WARN,  false, _fmt, ##_args)
-#define BRICK_INF(_fmt, _args...) _BRICK_MSG(SAY_INFO,  false, _fmt, ##_args)
+#define BRICK_WRN(_fmt, _args...) _BRICK_MSG(SAY_WARN,	false, _fmt, ##_args)
+#define BRICK_INF(_fmt, _args...) _BRICK_MSG(SAY_INFO,	false, _fmt, ##_args)
 
 #ifdef BRICK_DEBUGGING
 #define BRICK_DBG(_fmt, _args...) _BRICK_MSG(SAY_DEBUG, false, _fmt, ##_args)
@@ -67,8 +67,8 @@ struct generic_aspect;
 	const struct generic_object_type *object_type;			\
 	/* private */							\
 	int  aspect_size;						\
-        int  (*init_fn)(struct OBJTYPE##_aspect *ini);			\
-        void (*exit_fn)(struct OBJTYPE##_aspect *ini);			\
+	int  (*init_fn)(struct OBJTYPE##_aspect *ini);			\
+	void (*exit_fn)(struct OBJTYPE##_aspect *ini);			\
 	/* this comment is for keeping TRAILING_SEMICOLON happy */
 
 struct generic_aspect_type {
@@ -81,8 +81,8 @@ struct generic_aspect_type {
 	/* private */							\
 	int default_size;						\
 	int object_type_nr;						\
-        int  (*init_fn)(struct OBJTYPE##_object *ini);			\
-        void (*exit_fn)(struct OBJTYPE##_object *ini);			\
+	int  (*init_fn)(struct OBJTYPE##_object *ini);			\
+	void (*exit_fn)(struct OBJTYPE##_object *ini);			\
 	/* this comment is for keeping TRAILING_SEMICOLON happy */
 
 struct generic_object_type {
@@ -104,8 +104,8 @@ struct generic_object_layout {
 
 #define GENERIC_OBJECT(OBJTYPE)						\
 	/* maintenance, access by macros */				\
-	atomic_t ref_count;       /* reference counter */		\
-	bool     ref_initialized; /* internally used for checking */	\
+	atomic_t ref_count;	  /* reference counter */		\
+	bool	 ref_initialized; /* internally used for checking */	\
 	/* readonly from outside */					\
 	const struct generic_object_type *object_type;			\
 	/* private */							\
@@ -134,7 +134,7 @@ struct generic_aspect {
 
 #define GENERIC_ASPECT_CONTEXT(OBJTYPE)					\
 	/* private (for any layer) */					\
-	int brick_index; /* globally unique */                          \
+	int brick_index; /* globally unique */				\
 	/* this comment is for keeping TRAILING_SEMICOLON happy */
 
 struct generic_aspect_context {
@@ -143,16 +143,16 @@ struct generic_aspect_context {
 
 #define _mref_check(mref)						\
 	({								\
-		if (unlikely(BRICK_CHECKING && !(mref)->ref_initialized)) { \
-			MARS_ERR("mref %p is not initialized\n", (mref)); \
+		if (unlikely(BRICK_CHECKING && !(mref)->ref_initialized)) {\
+			MARS_ERR("mref %p is not initialized\n", (mref));\
 		}							\
 		CHECK_ATOMIC(&(mref)->ref_count, 1);			\
 	})
 
 #define _mref_get_first(mref)						\
 	({								\
-		if (unlikely(BRICK_CHECKING && (mref)->ref_initialized)) { \
-			MARS_ERR("mref %p is already initialized\n", (mref)); \
+		if (unlikely(BRICK_CHECKING && (mref)->ref_initialized)) {\
+			MARS_ERR("mref %p is already initialized\n", (mref));\
 		}							\
 		_CHECK_ATOMIC(&(mref)->ref_count, !=, 0);		\
 		(mref)->ref_initialized = true;				\
@@ -208,7 +208,7 @@ struct callback_object {
 
 /* Initial setup of the callback chain
  */
-#define _SETUP_CALLBACK(obj,fn,priv)					\
+#define _SETUP_CALLBACK(obj, fn, priv)					\
 do {									\
 	(obj)->_object_cb.cb_fn = (fn);					\
 	(obj)->_object_cb.cb_private = (priv);				\
@@ -218,21 +218,21 @@ do {									\
 } while (0)
 
 #ifdef BRICK_DEBUGGING
-#define SETUP_CALLBACK(obj,fn,priv)					\
+#define SETUP_CALLBACK(obj, fn, priv)					\
 do {									\
 	if (unlikely((obj)->_object_cb.cb_fn)) {			\
-		BRICK_ERR("callback function %p is already installed (new=%p)\n", \
+		BRICK_ERR("callback function %p is already installed (new=%p)\n",\
 			  (obj)->_object_cb.cb_fn, (fn));		\
 	}								\
-	_SETUP_CALLBACK(obj,fn,priv)					\
+	_SETUP_CALLBACK(obj, fn, priv)					\
 } while (0)
 #else
-#define SETUP_CALLBACK(obj,fn,priv) _SETUP_CALLBACK(obj,fn,priv)
+#define SETUP_CALLBACK(obj, fn, priv) _SETUP_CALLBACK(obj, fn, priv)
 #endif
 
 /* Insert a new member into the callback chain
  */
-#define _INSERT_CALLBACK(obj,new,fn,priv)				\
+#define _INSERT_CALLBACK(obj, new, fn, priv)				\
 do {									\
 	if (likely(!(new)->cb_fn)) {					\
 		(new)->cb_fn = (fn);					\
@@ -244,23 +244,23 @@ do {									\
 } while (0)
 
 #ifdef BRICK_DEBUGGING
-#define INSERT_CALLBACK(obj,new,fn,priv)				\
+#define INSERT_CALLBACK(obj, new, fn, priv)				\
 do {									\
 	if (unlikely(!(obj)->_object_cb.cb_fn)) {			\
 		BRICK_ERR("initical callback function is missing\n");	\
 	}								\
 	if (unlikely((new)->cb_fn)) {					\
-		BRICK_ERR("new object %p is not pristine\n", (new)->cb_fn); \
+		BRICK_ERR("new object %p is not pristine\n", (new)->cb_fn);\
 	}								\
-	_INSERT_CALLBACK(obj,new,fn,priv);				\
+	_INSERT_CALLBACK(obj, new, fn, priv);				\
 } while (0)
 #else
-#define INSERT_CALLBACK(obj,new,fn,priv) _INSERT_CALLBACK(obj,new,fn,priv)
+#define INSERT_CALLBACK(obj, new, fn, priv) _INSERT_CALLBACK(obj, new, fn, priv)
 #endif
 
 /* Call the first callback in the chain.
  */
-#define SIMPLE_CALLBACK(obj,err)					\
+#define SIMPLE_CALLBACK(obj, err)					\
 do {									\
 	if (likely(obj)) {						\
 		struct generic_callback *__cb = (obj)->object_cb;	\
@@ -268,14 +268,14 @@ do {									\
 			__cb->cb_error = (err);				\
 			__cb->cb_fn(__cb);				\
 		} else {						\
-			BRICK_ERR("callback object_cb pointer is NULL\n"); \
+			BRICK_ERR("callback object_cb pointer is NULL\n");\
 		}							\
 	} else {							\
 		BRICK_ERR("callback obj pointer is NULL\n");		\
 	}								\
 } while (0)
 
-#define CHECKED_CALLBACK(obj,err,done)					\
+#define CHECKED_CALLBACK(obj, err, done)				\
 do {									\
 	struct generic_callback *__cb;					\
 	CHECK_PTR(obj, done);						\
@@ -288,7 +288,7 @@ do {									\
 /* An intermediate callback handler must call this
  * to continue the callback chain.
  */
-#define NEXT_CHECKED_CALLBACK(cb,done)					\
+#define NEXT_CHECKED_CALLBACK(cb, done)					\
 do {									\
 	struct generic_callback *__next_cb = (cb)->cb_next;		\
 	CHECK_PTR_NULL(__next_cb, done);				\
@@ -303,7 +303,7 @@ do {									\
 do {									\
 	struct generic_callback *__next_cb = (cb)->cb_next;		\
 	if (unlikely(__next_cb)) {					\
-		BRICK_ERR("end of callback chain %p has not been reached, rest = %p\n", (cb), __next_cb); \
+		BRICK_ERR("end of callback chain %p has not been reached, rest = %p\n", (cb), __next_cb);\
 	}								\
 } while (0)
 
@@ -326,12 +326,15 @@ struct generic_brick_type;
 struct generic_switch {
 	/* set by strategy layer, readonly from worker layer */
 	bool button;
+
 	/* set by worker layer, readonly from strategy layer */
 	bool led_on;
 	bool led_off;
+
 	/* private (for any layer) */
 	bool force_off;
 	int  percent_done;
+
 	wait_queue_head_t event;
 };
 
@@ -382,15 +385,15 @@ struct generic_output {
 	GENERIC_OUTPUT(generic);
 };
 
-#define GENERIC_OUTPUT_CALL(OUTPUT,OP,ARGS...)				\
+#define GENERIC_OUTPUT_CALL(OUTPUT, OP, ARGS...)			\
 	(								\
 		(OUTPUT) && (OUTPUT)->ops->OP ?				\
 		(OUTPUT)->ops->OP(OUTPUT, ##ARGS) :			\
 		-ENOSYS							\
 	)
 
-#define GENERIC_INPUT_CALL(INPUT,OP,ARGS...)				\
-	(							        \
+#define GENERIC_INPUT_CALL(INPUT, OP, ARGS...)				\
+	(								\
 		(INPUT) && (INPUT)->connect ?				\
 		GENERIC_OUTPUT_CALL((INPUT)->connect, OP, ##ARGS) :	\
 		-ENOTCONN						\
@@ -406,7 +409,7 @@ struct generic_brick_ops {
 
 #define GENERIC_OUTPUT_OPS(BRITYPE)					\
 	/*int (*output_start)(struct BRITYPE##_output *output);*/	\
-	/*int (*output_stop)(struct BRITYPE##_output *output);*/		\
+	/*int (*output_stop)(struct BRITYPE##_output *output);*/	\
 	/* this comment is for keeping TRAILING_SEMICOLON happy */
 
 struct generic_output_ops {
@@ -466,7 +469,9 @@ struct generic_output_type {
 int generic_register_brick_type(const struct generic_brick_type *new_type);
 int generic_unregister_brick_type(const struct generic_brick_type *old_type);
 
-extern void _generic_output_init(struct generic_brick *brick, const struct generic_output_type *type, struct generic_output *output);
+extern void _generic_output_init(struct generic_brick *brick,
+	const struct generic_output_type *type,
+	struct generic_output *output);
 
 extern void _generic_output_exit(struct generic_output *output);
 
@@ -477,11 +482,17 @@ extern int generic_brick_init(const struct generic_brick_type *type, struct gene
 
 extern void generic_brick_exit(struct generic_brick *brick);
 
-extern int generic_input_init(struct generic_brick *brick, int index, const struct generic_input_type *type, struct generic_input *input);
+extern int generic_input_init(struct generic_brick *brick,
+	int index,
+	const struct generic_input_type *type,
+	struct generic_input *input);
 
 extern void generic_input_exit(struct generic_input *input);
 
-extern int generic_output_init(struct generic_brick *brick, int index, const struct generic_output_type *type, struct generic_output *output);
+extern int generic_output_init(struct generic_brick *brick,
+	int index,
+	const struct generic_output_type *type,
+	struct generic_output *output);
 
 extern int generic_size(const struct generic_brick_type *brick_type);
 
@@ -493,8 +504,8 @@ extern int generic_disconnect(struct generic_input *input);
  * input_types and output_types may be NULL => use default_*_types
  */
 int generic_brick_init_full(
-	void *data, 
-	int size, 
+	void *data,
+	int size,
 	const struct generic_brick_type *brick_type,
 	const struct generic_input_type **input_types,
 	const struct generic_output_type **output_types);
@@ -507,53 +518,56 @@ int generic_brick_exit_full(
 // simple wrappers for type safety
 
 #define DECLARE_BRICK_FUNCTIONS(BRITYPE)				\
-extern inline int BRITYPE##_register_brick_type(void)		        \
+extern inline int BRITYPE##_register_brick_type(void)			\
 {									\
 	extern const struct BRITYPE##_brick_type BRITYPE##_brick_type;	\
 	extern int BRITYPE##_brick_nr;					\
 	if (unlikely(BRITYPE##_brick_nr >= 0)) {			\
-		BRICK_ERR("brick type " #BRITYPE " is already registered.\n"); \
+		BRICK_ERR("brick type " #BRITYPE " is already registered.\n");\
 		return -EEXIST;						\
 	}								\
-	BRITYPE##_brick_nr = generic_register_brick_type((const struct generic_brick_type *)&BRITYPE##_brick_type); \
+	BRITYPE##_brick_nr = generic_register_brick_type((const struct generic_brick_type *)&BRITYPE##_brick_type);\
 	return BRITYPE##_brick_nr < 0 ? BRITYPE##_brick_nr : 0;		\
 }									\
 									\
-extern inline int BRITYPE##_unregister_brick_type(void)		        \
+extern inline int BRITYPE##_unregister_brick_type(void)			\
 {									\
 	extern const struct BRITYPE##_brick_type BRITYPE##_brick_type;	\
-	return generic_unregister_brick_type((const struct generic_brick_type *)&BRITYPE##_brick_type); \
+	return generic_unregister_brick_type((const struct generic_brick_type *)&BRITYPE##_brick_type);\
 }									\
 									\
-extern const struct BRITYPE##_brick_type BRITYPE##_brick_type;	        \
-extern const struct BRITYPE##_input_type BRITYPE##_input_type;	        \
-extern const struct BRITYPE##_output_type BRITYPE##_output_type;        \
+extern const struct BRITYPE##_brick_type BRITYPE##_brick_type;		\
+extern const struct BRITYPE##_input_type BRITYPE##_input_type;		\
+extern const struct BRITYPE##_output_type BRITYPE##_output_type;	\
 /* this comment is for keeping TRAILING_SEMICOLON happy */
 
 ///////////////////////////////////////////////////////////////////////
 
 // default operations on objects / aspects
 
-extern struct generic_object *generic_alloc(struct generic_object_layout *object_layout, const struct generic_object_type *object_type);
+extern struct generic_object *generic_alloc(struct generic_object_layout *object_layout,
+	const struct generic_object_type *object_type);
+
 extern void generic_free(struct generic_object *object);
 extern struct generic_aspect *generic_get_aspect(struct generic_brick *brick, struct generic_object *obj);
 
 #define DECLARE_OBJECT_FUNCTIONS(OBJTYPE)				\
-extern inline struct OBJTYPE##_object *alloc_##OBJTYPE(struct generic_object_layout *layout) \
+extern inline struct OBJTYPE##_object *alloc_##OBJTYPE(struct generic_object_layout *layout)\
 {									\
-        return (void *)generic_alloc(layout, &OBJTYPE##_type);		\
+	return (void *)generic_alloc(layout, &OBJTYPE##_type);		\
 }
 
-#define DECLARE_ASPECT_FUNCTIONS(BRITYPE,OBJTYPE)			\
+#define DECLARE_ASPECT_FUNCTIONS(BRITYPE, OBJTYPE)			\
 									\
-extern inline struct OBJTYPE##_object *BRITYPE##_alloc_##OBJTYPE(struct BRITYPE##_brick *brick) \
+extern inline struct OBJTYPE##_object *BRITYPE##_alloc_##OBJTYPE(struct BRITYPE##_brick *brick)\
 {									\
-        return alloc_##OBJTYPE(&brick->OBJTYPE##_object_layout);	\
+	return alloc_##OBJTYPE(&brick->OBJTYPE##_object_layout);	\
 }									\
 									\
-extern inline struct BRITYPE##_##OBJTYPE##_aspect *BRITYPE##_##OBJTYPE##_get_aspect(struct BRITYPE##_brick *brick, struct OBJTYPE##_object *obj) \
+extern inline struct BRITYPE##_##OBJTYPE##_aspect *BRITYPE##_##OBJTYPE##_get_aspect(struct BRITYPE##_brick *brick,\
+	struct OBJTYPE##_object *obj)					\
 {									\
-        return (void *)generic_get_aspect((struct generic_brick *)brick, (struct generic_object *)obj); \
+	return (void *)generic_get_aspect((struct generic_brick *)brick, (struct generic_object *)obj);\
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -580,10 +594,10 @@ extern void set_button_wait(struct generic_brick *brick, bool val, bool force, i
 
 #define brick_thread_create(_thread_fn, _data, _fmt, _args...)		\
 	({								\
-		struct task_struct *_thr = kthread_create(_thread_fn, _data, _fmt, ##_args);	\
+		struct task_struct *_thr = kthread_create(_thread_fn, _data, _fmt, ##_args);\
 		if (unlikely(IS_ERR(_thr))) {				\
 			int _err = PTR_ERR(_thr);			\
-			BRICK_ERR("cannot create thread '%s', status = %d\n", _fmt, _err); \
+			BRICK_ERR("cannot create thread '%s', status = %d\n", _fmt, _err);\
 			_thr = NULL;					\
 		} else {						\
 			struct say_channel *ch = get_binding(current);	\
@@ -600,19 +614,19 @@ extern void brick_thread_stop_nowait(struct task_struct *k);
 #define brick_thread_stop(_thread)					\
 	do {								\
 		if (likely(_thread)) {					\
-			BRICK_DBG("stopping thread '%s'\n", (_thread)->comm); \
+			BRICK_DBG("stopping thread '%s'\n", (_thread)->comm);\
 			kthread_stop(_thread);				\
-			BRICK_DBG("thread '%s' finished.\n", (_thread)->comm); \
+			BRICK_DBG("thread '%s' finished.\n", (_thread)->comm);\
 			remove_binding(_thread);			\
 			put_task_struct(_thread);			\
 			_thread = NULL;					\
 		}							\
 	} while (0)
 
-#define brick_thread_should_stop()		\
-	({					\
-		brick_yield();			\
-		kthread_should_stop();		\
+#define brick_thread_should_stop()					\
+	({								\
+		brick_yield();						\
+		kthread_should_stop();					\
 	})
 
 /////////////////////////////////////////////////////////////////////////

@@ -13,7 +13,7 @@
 
 #define USE_BUFFERING
 
-#define SEND_PROTO_VERSION   1
+#define SEND_PROTO_VERSION		1
 
 ////////////////////////////////////////////////////////////////////
 
@@ -24,7 +24,7 @@
  * automatically; therefore classical "int" or "long long" etc is viable.
  */
 
-#define MAX_FIELD_LEN   (32 + 16)
+#define MAX_FIELD_LEN			(32 + 16)
 
 struct mars_desc_cache {
 	u64   cache_sender_cookie;
@@ -41,6 +41,7 @@ struct mars_desc_cache {
 
 struct mars_desc_item {
 	char  field_name[MAX_FIELD_LEN];
+
 	s8    field_type;
 	s8    field_spare0;
 	s16   field_data_size;
@@ -53,7 +54,7 @@ struct mars_desc_item {
 
 /* This must not be mirror symmetric between big and little endian
  */
-#define MARS_DESC_MAGIC 0x73D0A2EC6148F48Ell
+#define MARS_DESC_MAGIC			0x73D0A2EC6148F48Ell
 
 struct mars_desc_header {
 	u64 h_magic;
@@ -64,7 +65,7 @@ struct mars_desc_header {
 	u64 h_spare2;
 };
 
-#define MAX_INT_TRANSFER 16
+#define MAX_INT_TRANSFER		16
 
 ////////////////////////////////////////////////////////////////////
 
@@ -73,9 +74,11 @@ struct mars_desc_header {
 
 #ifdef __LITTLE_ENDIAN
 static const bool myself_is_bigendian;
+
 #endif
 #ifdef __BIG_ENDIAN
 static const bool myself_is_bigendian = true;
+
 #endif
 
 static inline
@@ -86,6 +89,7 @@ void swap_bytes(void *data, int len)
 
 	while (a < b) {
 		char tmp = *a;
+
 		*a = *b;
 		*b = tmp;
 		a++;
@@ -160,13 +164,14 @@ static
 void __setsockopt(struct socket *sock, int level, int optname, char *optval, int optsize)
 {
 	int status = kernel_setsockopt(sock, level, optname, optval, optsize);
+
 	if (status < 0) {
 		MARS_WRN("cannot set %d socket option %d to value %d, status = %d\n",
 			 level, optname, *(int *)optval, status);
 	}
 }
 
-#define _setsockopt(sock,level,optname,val) __setsockopt(sock, level, optname, (char *)&(val), sizeof(val))
+#define _setsockopt(sock, level, optname, val) __setsockopt(sock, level, optname, (char *)&(val), sizeof(val))
 
 int mars_create_sockaddr(struct sockaddr_storage *addr, const char *spec)
 {
@@ -195,6 +200,7 @@ int mars_create_sockaddr(struct sockaddr_storage *addr, const char *spec)
 		goto done;
 	if (*tmp_spec != ':') {
 		unsigned char u0 = 0, u1 = 0, u2 = 0, u3 = 0;
+
 		status = sscanf(tmp_spec, "%hhu.%hhu.%hhu.%hhu", &u0, &u1, &u2, &u3);
 		if (status != 4) {
 			MARS_ERR("invalid sockaddr IP syntax '%s', status = %d\n", tmp_spec, status);
@@ -210,6 +216,7 @@ int mars_create_sockaddr(struct sockaddr_storage *addr, const char *spec)
 		/*empty*/;
 	if (*tmp_spec) {
 		int port = 0;
+
 		status = kstrtoint(tmp_spec, 0, &port);
 		if (unlikely(status)) {
 			MARS_ERR("invalid sockaddr PORT syntax '%s', status = %d\n", tmp_spec, status);
@@ -220,7 +227,7 @@ int mars_create_sockaddr(struct sockaddr_storage *addr, const char *spec)
 		sockaddr->sin_port = htons(port);
 	}
 	status = 0;
- done:
+done:
 	brick_string_free(new_spec);
 	return status;
 }
@@ -235,6 +242,7 @@ void _set_socketopts(struct socket *sock)
 		.tv_sec = default_tcp_params.tcp_timeout,
 	};
 	int x_true = 1;
+
 	/* TODO: improve this by a table-driven approach
 	 */
 	sock->sk->sk_rcvtimeo = sock->sk->sk_sndtimeo = default_tcp_params.tcp_timeout * HZ;
@@ -351,6 +359,7 @@ int mars_accept_socket(struct mars_socket *new_msock, struct mars_socket *old_ms
 	ok = mars_get_socket(old_msock);
 	if (likely(ok)) {
 		struct socket *sock = old_msock->s_socket;
+
 		if (unlikely(!sock)) {
 			goto err;
 		}
@@ -430,8 +439,10 @@ void mars_shutdown_socket(struct mars_socket *msock)
 {
 	if (msock->s_socket) {
 		bool ok = mars_get_socket(msock);
+
 		if (likely(ok)) {
 			struct socket *sock = msock->s_socket;
+
 			if (likely(sock && cmpxchg(&msock->s_alive, true, false))) {
 				MARS_DBG("#%d shutdown socket %p\n", msock->s_debug_nr, sock);
 				kernel_sock_shutdown(sock, SHUT_WR);
@@ -445,6 +456,7 @@ EXPORT_SYMBOL_GPL(mars_shutdown_socket);
 bool mars_socket_is_alive(struct mars_socket *msock)
 {
 	bool res = false;
+
 	if (!msock->s_socket || !msock->s_alive)
 		goto done;
 	if (unlikely(atomic_read(&msock->s_count) <= 0)) {
@@ -478,7 +490,7 @@ int _mars_send_raw(struct mars_socket *msock, const void *buf, int len)
 		{
 			struct kvec iov = {
 				.iov_base = (void *)buf,
-				.iov_len  = this_len,
+				.iov_len = this_len,
 			};
 			struct msghdr msg = {
 				.msg_iov = (struct iovec *)&iov,
@@ -513,7 +525,12 @@ int _mars_send_raw(struct mars_socket *msock, const void *buf, int len)
 			break;
 		}
 		if (unlikely(status < 0)) {
-			MARS_WRN("#%d bad socket sendmsg, len=%d, this_len=%d, sent=%d, status = %d\n", msock->s_debug_nr, len, this_len, sent, status);
+			MARS_WRN("#%d bad socket sendmsg, len=%d, this_len=%d, sent=%d, status = %d\n",
+				msock->s_debug_nr,
+				len,
+				this_len,
+				sent,
+				status);
 			break;
 		}
 
@@ -534,6 +551,7 @@ int mars_send_raw(struct mars_socket *msock, const void *buf, int len, bool cork
 #ifdef USE_BUFFERING
 	int sent = 0;
 	int rest = len;
+
 #endif
 	int status = -EINVAL;
 
@@ -657,7 +675,10 @@ int mars_recv_raw(struct mars_socket *msock, void *buf, int minlen, int maxlen)
 		}
 		msock->s_recv_cnt = 0;
 		if (!status) { // EOF
-			MARS_WRN("#%d got EOF from socket (done=%d, req_size=%d)\n", msock->s_debug_nr, done, maxlen - done);
+			MARS_WRN("#%d got EOF from socket (done=%d, req_size=%d)\n",
+				msock->s_debug_nr,
+				done,
+				maxlen - done);
 			status = -EPIPE;
 			goto err;
 		}
@@ -690,10 +711,12 @@ static
 int _add_fields(struct mars_desc_item *mi, const struct meta *meta, int offset, const char *prefix, int maxlen)
 {
 	int count = 0;
+
 	for (; meta->field_name != NULL; meta++) {
 		const char *new_prefix;
 		int new_offset;
 		int len;
+
 		short this_size;
 
 		new_prefix = mi->field_name;
@@ -728,6 +751,7 @@ int _add_fields(struct mars_desc_item *mi, const struct meta *meta, int offset, 
 
 		if (meta->field_type == FIELD_SUB) {
 			int sub_count;
+
 			sub_count = _add_fields(mi, meta->field_ref, new_offset, new_prefix, maxlen);
 			if (sub_count < 0)
 				return sub_count;
@@ -801,6 +825,7 @@ void _make_recver_cache(struct mars_desc_cache *mc, const struct meta *meta, int
 		snprintf(tmp, MAX_FIELD_LEN, "%s.%s", prefix, meta->field_name);
 		for (i = 0; i < mc->cache_items; i++) {
 			struct mars_desc_item *mi = ((struct mars_desc_item *)(mc + 1)) + i;
+
 			if (meta->field_type == mi->field_type &&
 			    !strcmp(tmp, mi->field_name)) {
 				mi->field_recver_size = meta->field_data_size;
@@ -812,7 +837,7 @@ void _make_recver_cache(struct mars_desc_cache *mc, const struct meta *meta, int
 			}
 		}
 		MARS_WRN("field '%s' is missing\n", meta->field_name);
-	found:;
+found:;
 	}
 	brick_string_free(tmp);
 }
@@ -826,25 +851,31 @@ void make_recver_cache(struct mars_desc_cache *mc, const struct meta *meta)
 
 	for (i = 0; i < mc->cache_items; i++) {
 		struct mars_desc_item *mi = ((struct mars_desc_item *)(mc + 1)) + i;
+
 		if (unlikely(mi->field_recver_offset < 0)) {
 			MARS_WRN("field '%s' is not transferred\n", mi->field_name);
 		}
 	}
 }
 
-#define _CHECK_STATUS(_txt_)					\
-do {								\
-	if (unlikely(status < 0)) {				\
-		MARS_DBG("%s status = %d\n", _txt_, status);	\
-		goto err;					\
-	}							\
+#define _CHECK_STATUS(_txt_)						\
+do {									\
+	if (unlikely(status < 0)) {					\
+		MARS_DBG("%s status = %d\n", _txt_, status);		\
+		goto err;						\
+	}								\
 } while (0)
 
 static
-int _desc_send_item(struct mars_socket *msock, const void *data, const struct mars_desc_cache *mc, int index, bool cork)
+int _desc_send_item(struct mars_socket *msock,
+	const void *data,
+	const struct mars_desc_cache *mc,
+	int index,
+	bool cork)
 {
 	struct mars_desc_item *mi = ((struct mars_desc_item *)(mc + 1)) + index;
 	const void *item = data + mi->field_sender_offset;
+
 	s16 data_len = mi->field_data_size;
 	s16 transfer_len = mi->field_sender_size;
 	int status;
@@ -944,7 +975,7 @@ int _desc_send_item(struct mars_socket *msock, const void *data, const struct ma
 				item += end;
 			}
 			goto raw;
-		}		
+		}
 	case FIELD_STRING:
 		item = *(void **)item;
 		data_len = 0;
@@ -955,7 +986,7 @@ int _desc_send_item(struct mars_socket *msock, const void *data, const struct ma
 		_CHECK_STATUS("send_string_len");
 		/* fallthrough */
 	case FIELD_RAW:
-	raw:
+raw:
 		if (unlikely(data_len < 0)) {
 			MARS_ERR("field '%s' bad data_len = %d\n", mi->field_name, data_len);
 			goto err;
@@ -976,6 +1007,7 @@ int _desc_recv_item(struct mars_socket *msock, void *data, const struct mars_des
 {
 	struct mars_desc_item *mi = ((struct mars_desc_item *)(mc + 1)) + index;
 	void *item = NULL;
+
 	s16 data_len = mi->field_recver_size;
 	s16 transfer_len = mi->field_sender_size;
 	int status;
@@ -1038,7 +1070,7 @@ int _desc_recv_item(struct mars_socket *msock, void *data, const struct mars_des
 			while (--diff >= 0) {
 				if (unlikely(empty[diff] != check)) {
 					MARS_ERR("field '%s' %sSIGNED INTEGER OVERFLOW on size reduction from %d to %d, byte %d != %d\n",
-						 mi->field_name, 
+						 mi->field_name,
 						 is_signed ? "" : "UN",
 						 transfer_len,
 						 data_len,
@@ -1050,7 +1082,7 @@ int _desc_recv_item(struct mars_socket *msock, void *data, const struct mars_des
 			if (is_signed && item &&
 			    unlikely(get_sign(item, data_len, myself_is_bigendian, true) != check)) {
 				MARS_ERR("field '%s' SIGNED INTEGER OVERLOW on reduction from size %d to %d, byte %d !~ %d\n",
-					 mi->field_name, 
+					 mi->field_name,
 					 transfer_len,
 					 data_len,
 					 ((char *)item)[data_len - 1],
@@ -1091,7 +1123,7 @@ int _desc_recv_item(struct mars_socket *msock, void *data, const struct mars_des
 
 			res = data_len;
 			break;
-		}		
+		}
 	case FIELD_STRING:
 		data_len = 0;
 		status = mars_recv_raw(msock, &data_len, sizeof(data_len), sizeof(data_len));
@@ -1103,6 +1135,7 @@ int _desc_recv_item(struct mars_socket *msock, void *data, const struct mars_des
 
 		if (data_len > 0 && item) {
 			char *str = _brick_string_alloc(data_len, line);
+
 			*(void **)item = str;
 			item = str;
 		}
@@ -1110,14 +1143,17 @@ int _desc_recv_item(struct mars_socket *msock, void *data, const struct mars_des
 		transfer_len = data_len;
 		/* fallthrough */
 	case FIELD_RAW:
-	raw:
+raw:
 		if (unlikely(data_len < 0)) {
 			MARS_ERR("field = '%s' implausible data_len = %d\n", mi->field_name, data_len);
 			goto err;
 		}
 		if (likely(data_len > 0)) {
 			if (unlikely(transfer_len != data_len)) {
-				MARS_ERR("cannot handle generic mismatch in transfer sizes, field = '%s', %d != %d\n", mi->field_name, transfer_len, data_len);
+				MARS_ERR("cannot handle generic mismatch in transfer sizes, field = '%s', %d != %d\n",
+					mi->field_name,
+					transfer_len,
+					data_len);
 				goto err;
 			}
 			status = mars_recv_raw(msock, item, data_len, data_len);
@@ -1136,6 +1172,7 @@ static inline
 int _desc_send_struct(struct mars_socket *msock, int cache_index, const void *data, int h_meta_len, bool cork)
 {
 	const struct mars_desc_cache *mc = msock->s_desc_send[cache_index];
+
 	struct mars_desc_header header = {
 		.h_magic = MARS_DESC_MAGIC,
 		.h_cookie = mc->cache_sender_cookie,
@@ -1202,7 +1239,7 @@ int desc_recv_struct(struct mars_socket *msock, void *data, const struct meta *m
 {
 	struct mars_desc_header header = {};
 	struct mars_desc_cache *mc;
-	int cache_index; 
+	int cache_index;
 	int index;
 	int count = 0;
 	int status = 0;
@@ -1215,7 +1252,10 @@ int desc_recv_struct(struct mars_socket *msock, void *data, const struct meta *m
 		need_swap = true;
 		SWAP_FIELD(header.h_magic);
 		if (unlikely(header.h_magic != MARS_DESC_MAGIC)) {
-			MARS_WRN("#%d called from line %d bad packet header magic = %llx\n", msock->s_debug_nr, line, header.h_magic);
+			MARS_WRN("#%d called from line %d bad packet header magic = %llx\n",
+				msock->s_debug_nr,
+				line,
+				header.h_magic);
 			status = -ENOMSG;
 			goto err;
 		}
@@ -1258,7 +1298,10 @@ int desc_recv_struct(struct mars_socket *msock, void *data, const struct meta *m
 
 		msock->s_desc_recv[cache_index] = mc;
 	} else if (unlikely(header.h_meta_len > 0)) {
-		MARS_WRN("#%d called from line %d has %d unexpected meta bytes\n", msock->s_debug_nr, line, header.h_meta_len);
+		MARS_WRN("#%d called from line %d has %d unexpected meta bytes\n",
+			msock->s_debug_nr,
+			line,
+			header.h_meta_len);
 	}
 
 	for (index = 0; index < mc->cache_items; index++) {

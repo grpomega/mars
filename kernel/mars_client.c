@@ -15,7 +15,7 @@
 
 #include "mars_client.h"
 
-#define CLIENT_HASH_MAX (PAGE_SIZE / sizeof(struct list_head))
+#define CLIENT_HASH_MAX			(PAGE_SIZE / sizeof(struct list_head))
 
 int mars_client_abort = 10;
 EXPORT_SYMBOL_GPL(mars_client_abort);
@@ -126,7 +126,9 @@ static int _connect(struct client_output *output, const char *str)
 
 done:
 	if (status < 0) {
-		MARS_INF("cannot connect to remote host '%s' (status = %d) -- retrying\n", output->host ? output->host : "NULL", status);
+		MARS_INF("cannot connect to remote host '%s' (status = %d) -- retrying\n",
+			output->host ? output->host : "NULL",
+			status);
 		_kill_socket(output);
 	}
 really_done:
@@ -173,6 +175,7 @@ static int client_ref_get(struct client_output *output, struct mref_object *mref
 
 	if (!mref->ref_data) { // buffered IO
 		struct client_mref_aspect *mref_a = client_mref_get_aspect(output->brick, mref);
+
 		if (!mref_a)
 			return -EILSEQ;
 
@@ -189,6 +192,7 @@ static int client_ref_get(struct client_output *output, struct mref_object *mref
 static void client_ref_put(struct client_output *output, struct mref_object *mref)
 {
 	struct client_mref_aspect *mref_a;
+
 	if (!_mref_put(mref))
 		goto out_return;
 	mref_a = client_mref_get_aspect(output->brick, mref);
@@ -252,7 +256,7 @@ int receiver_thread(void *data)
 	struct client_output *output = data;
 	int status = 0;
 
-        while (!brick_thread_should_stop()) {
+	while (!brick_thread_should_stop()) {
 		struct mars_cmd cmd = {};
 		struct list_head *tmp;
 		struct client_mref_aspect *mref_a = NULL;
@@ -280,6 +284,7 @@ int receiver_thread(void *data)
 			spin_lock(&output->lock);
 			for (tmp = output->hash_table[hash_index].next; tmp != &output->hash_table[hash_index]; tmp = tmp->next) {
 				struct mref_object *tmp_mref;
+
 				mref_a = container_of(tmp, struct client_mref_aspect, hash_head);
 				tmp_mref = mref_a->object;
 				if (unlikely(!tmp_mref)) {
@@ -332,7 +337,7 @@ int receiver_thread(void *data)
 			status = -EBADR;
 			goto done;
 		}
-	done:
+done:
 		brick_string_free(cmd.cmd_str1);
 		if (unlikely(status < 0)) {
 			if (!output->recv_error) {
@@ -361,6 +366,7 @@ void _do_resubmit(struct client_output *output)
 		struct list_head *first = output->wait_list.next;
 		struct list_head *last = output->wait_list.prev;
 		struct list_head *old_start = output->mref_list.next;
+
 #define list_connect __list_del // the original routine has a misleading name: in reality it is more general
 		list_connect(&output->mref_list, first);
 		list_connect(last, old_start);
@@ -443,7 +449,7 @@ static int sender_thread(void *data)
 
 	output->receiver.restart_count = 0;
 
-        while (!brick_thread_should_stop()) {
+	while (!brick_thread_should_stop()) {
 		struct list_head *tmp = NULL;
 		struct client_mref_aspect *mref_a;
 		struct mref_object *mref;
@@ -510,6 +516,7 @@ static int sender_thread(void *data)
 
 		if (brick->limit_mode) {
 			int amount = 0;
+
 			if (mref->ref_cs_mode < 2)
 				amount = (mref->ref_len - 1) / 1024 + 1;
 			mars_limit_sleep(&client_limiter, amount);
@@ -558,10 +565,13 @@ static int client_switch(struct client_brick *brick)
 	if (brick->power.button) {
 		if (brick->power.led_on)
 			goto done;
-		mars_power_led_off((void*)brick, false);
+		mars_power_led_off((void *)brick, false);
 		if (!output->sender.thread) {
 			brick->connection_state = 1;
-			output->sender.thread = brick_thread_create(sender_thread, output, "mars_sender%d", thread_count++);
+			output->sender.thread = brick_thread_create(sender_thread,
+				output,
+				"mars_sender%d",
+				thread_count++);
 			if (unlikely(!output->sender.thread)) {
 				MARS_ERR("cannot start sender thread\n");
 				status = -ENOENT;
@@ -569,16 +579,16 @@ static int client_switch(struct client_brick *brick)
 			}
 		}
 		if (output->sender.thread) {
-			mars_power_led_on((void*)brick, true);
+			mars_power_led_on((void *)brick, true);
 		}
 	} else {
 		if (brick->power.led_off)
 			goto done;
-		mars_power_led_on((void*)brick, false);
+		mars_power_led_on((void *)brick, false);
 		_kill_thread(&output->sender, "sender");
 		brick->connection_state = 0;
 		if (!output->sender.thread) {
-			mars_power_led_off((void*)brick, !output->sender.thread);
+			mars_power_led_off((void *)brick, !output->sender.thread);
 		}
 	}
 done:
@@ -605,13 +615,14 @@ char *client_statistics(struct client_brick *brick, int verbose)
 		 atomic_read(&output->timeout_count),
 		 atomic_read(&output->fly_count));
 
-        return res;
+	return res;
 }
 
 static
 void client_reset_statistics(struct client_brick *brick)
 {
 	struct client_output *output = brick->outputs[0];
+
 	atomic_set(&output->timeout_count, 0);
 }
 
@@ -619,7 +630,8 @@ void client_reset_statistics(struct client_brick *brick)
 
 static int client_mref_aspect_init_fn(struct generic_aspect *_ini)
 {
-	struct client_mref_aspect *ini = (void*)_ini;
+	struct client_mref_aspect *ini = (void *)_ini;
+
 	INIT_LIST_HEAD(&ini->io_head);
 	INIT_LIST_HEAD(&ini->hash_head);
 	INIT_LIST_HEAD(&ini->tmp_head);
@@ -628,7 +640,8 @@ static int client_mref_aspect_init_fn(struct generic_aspect *_ini)
 
 static void client_mref_aspect_exit_fn(struct generic_aspect *_ini)
 {
-	struct client_mref_aspect *ini = (void*)_ini;
+	struct client_mref_aspect *ini = (void *)_ini;
+
 	CHECK_HEAD_EMPTY(&ini->io_head);
 	CHECK_HEAD_EMPTY(&ini->hash_head);
 }
@@ -675,8 +688,8 @@ static int client_output_destruct(struct client_output *output)
 
 static struct client_brick_ops client_brick_ops = {
 	.brick_switch = client_switch,
-        .brick_statistics = client_statistics,
-        .reset_statistics = client_reset_statistics,
+	.brick_statistics = client_statistics,
+	.reset_statistics = client_reset_statistics,
 };
 
 static struct client_output_ops client_output_ops = {
@@ -733,7 +746,7 @@ EXPORT_SYMBOL_GPL(global_net_io_timeout);
 int __init init_mars_client(void)
 {
 	MARS_INF("init_client()\n");
-	_client_brick_type = (void*)&client_brick_type;
+	_client_brick_type = (void *)&client_brick_type;
 	return client_register_brick_type();
 }
 

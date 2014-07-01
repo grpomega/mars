@@ -4,10 +4,10 @@
 
 #include <linux/semaphore.h>
 
-#define HT_SHIFT 6 //????
-#define MARS_MAX_SEGMENT_SIZE (1U << (9+HT_SHIFT))
+#define HT_SHIFT			6 //????
+#define MARS_MAX_SEGMENT_SIZE		(1U << (9+HT_SHIFT))
 
-#define MAX_BIO 32
+#define MAX_BIO				32
 
 ///////////////////////// global tuning ////////////////////////
 
@@ -51,6 +51,7 @@ struct if_input {
 	loff_t capacity;
 	atomic_t plugged_count;
 	atomic_t flying_count;
+
 	// only for statistics
 	atomic_t read_flying_count;
 	atomic_t write_flying_count;
@@ -78,8 +79,10 @@ struct if_brick {
 	int max_plugged;
 	int readahead;
 	bool skip_sync;
+
 	// inspectable
 	atomic_t open_count;
+
 	// private
 	struct semaphore switch_sem;
 	struct say_channel *say_channel;

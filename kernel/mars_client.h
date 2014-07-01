@@ -25,6 +25,7 @@ struct client_brick {
 	int max_flying; // limit on parallelism
 	int io_timeout;    // > 0: report IO errors after timeout (in seconds)
 	bool limit_mode;
+
 	// readonly from outside
 	int connection_state; // 0 = switched off, 1 = not connected, 2 = connected
 };
@@ -35,6 +36,7 @@ struct client_input {
 
 struct client_threadinfo {
 	struct task_struct *thread;
+
 	wait_queue_head_t run_event;
 	int restart_count;
 };
@@ -46,6 +48,7 @@ struct client_output {
 	spinlock_t lock;
 	struct list_head mref_list;
 	struct list_head wait_list;
+
 	wait_queue_head_t event;
 	int  last_id;
 	int recv_error;
@@ -55,6 +58,7 @@ struct client_output {
 	struct client_threadinfo sender;
 	struct client_threadinfo receiver;
 	struct mars_info info;
+
 	wait_queue_head_t info_event;
 	bool get_info;
 	bool got_info;

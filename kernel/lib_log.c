@@ -15,6 +15,7 @@ EXPORT_SYMBOL_GPL(global_mref_flying);
 void exit_logst(struct log_status *logst)
 {
 	int count;
+
 	log_flush(logst);
 
 	// TODO: replace by event
@@ -53,7 +54,7 @@ void init_logst(struct log_status *logst, struct mars_input *input, loff_t start
 }
 EXPORT_SYMBOL_GPL(init_logst);
 
-#define MARS_LOG_CB_MAX 32
+#define MARS_LOG_CB_MAX			32
 
 struct log_cb_info {
 	struct mref_object *mref;
@@ -61,6 +62,7 @@ struct log_cb_info {
 	struct semaphore mutex;
 	atomic_t refcount;
 	int nr_cb;
+
 	/* make checkpatch.pl happy with a blank line - is this a false positive? */
 
 	void (*endios[MARS_LOG_CB_MAX])(void *private, int error);
@@ -79,9 +81,11 @@ static
 void _do_callbacks(struct log_cb_info *cb_info, int error)
 {
 	int i;
+
 	down(&cb_info->mutex);
 	for (i = 0; i < cb_info->nr_cb; i++) {
 		void (*end_fn)(void *private, int error);
+
 		end_fn = cb_info->endios[i];
 		cb_info->endios[i] = NULL;
 		if (end_fn) {
@@ -105,7 +109,7 @@ void log_write_endio(struct generic_callback *cb)
 
 	_do_callbacks(cb_info, cb->cb_error);
 
- done:
+done:
 	put_log_cb_info(cb_info);
 	atomic_dec(&logst->mref_flying);
 	atomic_dec(&global_mref_flying);
@@ -132,8 +136,10 @@ void log_flush(struct log_status *logst)
 	if (align_size > 0) {
 		// round up to next alignment border
 		int align_offset = logst->offset & (align_size-1);
+
 		if (align_offset > 0) {
 			int restlen = mref->ref_len - logst->offset;
+
 			gap = align_size - align_offset;
 			if (unlikely(gap > restlen)) {
 				gap = restlen;
@@ -175,6 +181,7 @@ void *log_reserve(struct log_status *logst, struct log_header *lh)
 	struct log_cb_info *cb_info = logst->private;
 	struct mref_object *mref;
 	void *data;
+
 	short total_len = lh->l_len + OVERHEAD;
 	int offset;
 	int status;
@@ -305,8 +312,9 @@ bool log_finalize(struct log_status *logst, int len, void (*endio)(void *private
 	crc = 0;
 	if (logst->do_crc) {
 		unsigned char checksum[mars_digest_size];
+
 		mars_digest(checksum, data + logst->payload_offset, len);
-		crc = *(int*)checksum;
+		crc = *(int *)checksum;
 	}
 
 	/* Correct the length in the header.
@@ -324,7 +332,7 @@ bool log_finalize(struct log_status *logst, int len, void (*endio)(void *private
 	DATA_PUT(data, offset, (short)0); // spare
 	DATA_PUT(data, offset, logst->seq_nr + 1);
 	get_lamport(&now);    // when the log entry was ready.
-	DATA_PUT(data, offset, now.tv_sec);  
+	DATA_PUT(data, offset, now.tv_sec);
 	DATA_PUT(data, offset, now.tv_nsec);
 
 	if (unlikely(offset > mref->ref_len)) {
@@ -382,6 +390,7 @@ restart:
 	mref = logst->read_mref;
 	if (!mref || logst->do_free) {
 		loff_t this_len;
+
 		if (mref) {
 			GENERIC_INPUT_CALL(logst->input, mref_put, mref);
 			logst->read_mref = NULL;
@@ -393,7 +402,11 @@ restart:
 		if (this_len > logst->chunk_size) {
 			this_len = logst->chunk_size;
 		} else if (unlikely(this_len <= 0)) {
-			MARS_ERR("tried bad IO len %lld, start_pos = %lld log_pos = %lld end_pos = %lld\n", this_len, logst->start_pos, logst->log_pos, logst->end_pos);
+			MARS_ERR("tried bad IO len %lld, start_pos = %lld log_pos = %lld end_pos = %lld\n",
+				this_len,
+				logst->start_pos,
+				logst->log_pos,
+				logst->end_pos);
 			status = -EOVERFLOW;
 			goto done;
 		}

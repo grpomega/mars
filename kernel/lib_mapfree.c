@@ -68,8 +68,8 @@ void mapfree_pages(struct mapfree_info *mf, int grace_keep)
 			if (likely(start > 0))
 				start--;
 			mf->mf_last = min;
-			end   = min / PAGE_SIZE;
-		} else  { // there was no progress for at least 2 rounds
+			end = min / PAGE_SIZE;
+		} else	{ // there was no progress for at least 2 rounds
 			start = 0;
 			if (!grace_keep) // also flush thoroughly
 				end = -1;
@@ -118,6 +118,7 @@ struct mapfree_info *mapfree_get(const char *name, int flags)
 		down_read(&mapfree_mutex);
 		for (tmp = mapfree_list.next; tmp != &mapfree_list; tmp = tmp->next) {
 			struct mapfree_info *_mf = container_of(tmp, struct mapfree_info, mf_head);
+
 			if (_mf->mf_flags == flags && !strcmp(_mf->mf_name, name)) {
 				mf = _mf;
 				atomic_inc(&mf->mf_count);
@@ -135,6 +136,7 @@ struct mapfree_info *mapfree_get(const char *name, int flags)
 		struct inode *inode = NULL;
 		int ra = 1;
 		int prot = 0600;
+
 		mm_segment_t oldfs;
 
 		mf = brick_zmem_alloc(sizeof(struct mapfree_info));
@@ -157,6 +159,7 @@ struct mapfree_info *mapfree_get(const char *name, int flags)
 
 		if (unlikely(!mf->mf_filp || IS_ERR(mf->mf_filp))) {
 			int err = PTR_ERR(mf->mf_filp);
+
 			MARS_ERR("can't open file '%s' status=%d\n", name, err);
 			mf->mf_filp = NULL;
 			_mapfree_put(mf);
@@ -180,11 +183,13 @@ struct mapfree_info *mapfree_get(const char *name, int flags)
 		mf->mf_max = i_size_read(inode);
 
 		if (S_ISBLK(inode->i_mode)) {
-			MARS_INF("changing blkdev readahead from %lu to %d\n", inode->i_bdev->bd_disk->queue->backing_dev_info.ra_pages, ra);
+			MARS_INF("changing blkdev readahead from %lu to %d\n",
+				inode->i_bdev->bd_disk->queue->backing_dev_info.ra_pages,
+				ra);
 			inode->i_bdev->bd_disk->queue->backing_dev_info.ra_pages = ra;
 		}
 
-		if (flags & O_DIRECT) {	// never share them
+		if (flags & O_DIRECT) { // never share them
 			break;
 		}
 
@@ -192,6 +197,7 @@ struct mapfree_info *mapfree_get(const char *name, int flags)
 		down_write(&mapfree_mutex);
 		for (tmp = mapfree_list.next; tmp != &mapfree_list; tmp = tmp->next) {
 			struct mapfree_info *_mf = container_of(tmp, struct mapfree_info, mf_head);
+
 			if (unlikely(_mf->mf_flags == flags && !strcmp(_mf->mf_name, name))) {
 				MARS_WRN("race on creation of '%s' detected\n", name);
 				_mapfree_put(mf);
@@ -201,11 +207,11 @@ struct mapfree_info *mapfree_get(const char *name, int flags)
 			}
 		}
 		list_add_tail(&mf->mf_head, &mapfree_list);
-	leave:
+leave:
 		up_write(&mapfree_mutex);
 		break;
 	}
- done:
+done:
 	return mf;
 }
 EXPORT_SYMBOL_GPL(mapfree_get);
@@ -238,6 +244,7 @@ int mapfree_thread(void *data)
 
 		for (tmp = mapfree_list.next; tmp != &mapfree_list; tmp = tmp->next) {
 			struct mapfree_info *_mf = container_of(tmp, struct mapfree_info, mf_head);
+
 			if (unlikely(!_mf->mf_jiffies)) {
 				_mf->mf_jiffies = jiffies;
 				continue;
@@ -296,6 +303,7 @@ void mf_get_dirty(struct mapfree_info *mf, loff_t *min, loff_t *max, int min_sta
 	for (tmp = mf->mf_dirty_anchor.next; tmp != &mf->mf_dirty_anchor; tmp = tmp->next) {
 		struct dirty_info *di = container_of(tmp, struct dirty_info, dirty_head);
 		struct mref_object *mref = di->dirty_mref;
+
 		if (unlikely(!mref)) {
 			continue;
 		}
@@ -320,6 +328,7 @@ void mf_get_any_dirty(const char *filename, loff_t *min, loff_t *max, int min_st
 	down_read(&mapfree_mutex);
 	for (tmp = mapfree_list.next; tmp != &mapfree_list; tmp = tmp->next) {
 		struct mapfree_info *mf = container_of(tmp, struct mapfree_info, mf_head);
+
 		if (!strcmp(mf->mf_name, filename)) {
 			mf_get_dirty(mf, min, max, min_stage, max_stage);
 		}

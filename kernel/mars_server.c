@@ -14,9 +14,9 @@
 #include "mars.h"
 #include "mars_bio.h"
 #include "mars_aio.h"
-//      remove_this
+//	remove_this
 #include "mars_sio.h"
-//      end_remove_this
+//	end_remove_this
 
 #include "sy_old/strategy.h"
 
@@ -24,7 +24,7 @@
 
 #include "mars_server.h"
 
-#define NR_SOCKETS 3
+#define NR_SOCKETS			3
 
 static struct mars_socket server_socket[NR_SOCKETS];
 static struct task_struct *server_thread[NR_SOCKETS];
@@ -47,7 +47,7 @@ int cb_thread(void *data)
 	brick->cb_running = true;
 	wake_up_interruptible(&brick->startup_event);
 
-        while (!brick_thread_should_stop() || !list_empty(&brick->cb_read_list) || !list_empty(&brick->cb_write_list) || atomic_read(&brick->in_flight) > 0) {
+	while (!brick_thread_should_stop() || !list_empty(&brick->cb_read_list) || !list_empty(&brick->cb_write_list) || atomic_read(&brick->in_flight) > 0) {
 		struct server_mref_aspect *mref_a;
 		struct mref_object *mref;
 		struct list_head *tmp;
@@ -83,7 +83,7 @@ int cb_thread(void *data)
 			up(&brick->socket_sem);
 		}
 
-	err:
+err:
 		if (unlikely(status < 0) && !aborted) {
 			aborted = true;
 			MARS_WRN("cannot send response, status = %d\n", status);
@@ -199,12 +199,13 @@ int server_io(struct server_brick *brick, struct mars_socket *sock, struct mars_
 done:
 	return status;
 }
-//      remove_this
+//	remove_this
 
 static
 int _set_server_sio_params(struct mars_brick *_brick, void *private)
 {
 	struct sio_brick *sio_brick = (void *)_brick;
+
 	if (_brick->type != (void *)_sio_brick_type) {
 		MARS_ERR("bad brick type\n");
 		return -EINVAL;
@@ -214,17 +215,18 @@ int _set_server_sio_params(struct mars_brick *_brick, void *private)
 	MARS_INF("name = '%s' path = '%s'\n", _brick->brick_name, _brick->brick_path);
 	return 1;
 }
-//      end_remove_this
+//	end_remove_this
 
 static
 int _set_server_aio_params(struct mars_brick *_brick, void *private)
 {
 	struct aio_brick *aio_brick = (void *)_brick;
-//      remove_this
+
+//	remove_this
 	if (_brick->type == (void *)_sio_brick_type) {
 		return _set_server_sio_params(_brick, private);
 	}
-//      end_remove_this
+//	end_remove_this
 	if (_brick->type != (void *)_aio_brick_type) {
 		MARS_ERR("bad brick type\n");
 		return -EINVAL;
@@ -240,14 +242,15 @@ static
 int _set_server_bio_params(struct mars_brick *_brick, void *private)
 {
 	struct bio_brick *bio_brick;
+
 	if (_brick->type == (void *)_aio_brick_type) {
 		return _set_server_aio_params(_brick, private);
 	}
-//      remove_this
+//	remove_this
 	if (_brick->type == (void *)_sio_brick_type) {
 		return _set_server_sio_params(_brick, private);
 	}
-//      end_remove_this
+//	end_remove_this
 	if (_brick->type != (void *)_bio_brick_type) {
 		MARS_ERR("bad brick type\n");
 		return -EINVAL;
@@ -283,7 +286,7 @@ int handler_thread(void *data)
 	brick->handler_running = true;
 	wake_up_interruptible(&brick->startup_event);
 
-        while (!brick_thread_should_stop() && mars_socket_is_alive(sock)) {
+	while (!brick_thread_should_stop() && mars_socket_is_alive(sock)) {
 		struct mars_cmd cmd = {};
 
 		status = -EINTR;
@@ -316,6 +319,7 @@ int handler_thread(void *data)
 		case CMD_GETINFO:
 		{
 			struct mars_info info = {};
+
 			status = GENERIC_INPUT_CALL(brick->inputs[0], mars_get_info, &info);
 			if (status < 0) {
 				break;
@@ -346,14 +350,22 @@ int handler_thread(void *data)
 			init_rwsem(&local.dent_mutex);
 			init_rwsem(&local.brick_mutex);
 
-			status = mars_dent_work(&local, "/mars", sizeof(struct mars_dent), external_checker, dummy_worker, &local, 3);
+			status = mars_dent_work(&local,
+				"/mars",
+				sizeof(struct mars_dent),
+				external_checker,
+				dummy_worker,
+				&local,
+				3);
 
 			down(&brick->socket_sem);
 			status = mars_send_dent_list(sock, &local.dent_anchor);
 			up(&brick->socket_sem);
 
 			if (status < 0) {
-				MARS_WRN("#%d could not send dentry information, status = %d\n", sock->s_debug_nr, status);
+				MARS_WRN("#%d could not send dentry information, status = %d\n",
+					sock->s_debug_nr,
+					status);
 			}
 
 			mars_free_dent_all(&local, &local.dent_anchor);
@@ -395,7 +407,7 @@ int handler_thread(void *data)
 				MARS_ERR("#%d cannot find brick '%s'\n", sock->s_debug_nr, path);
 			}
 
-		err:
+err:
 			cmd.cmd_int1 = status;
 			down(&brick->socket_sem);
 			status = mars_send_struct(sock, &cmd, mars_cmd_meta);
@@ -408,12 +420,13 @@ int handler_thread(void *data)
 			break;
 		}
 		case CMD_CB:
-			MARS_ERR("#%d oops, as a server I should never get CMD_CB; something is wrong here - attack attempt??\n", sock->s_debug_nr);
+			MARS_ERR("#%d oops, as a server I should never get CMD_CB; something is wrong here - attack attempt??\n",
+				sock->s_debug_nr);
 			break;
 		default:
 			MARS_ERR("#%d unknown command %d\n", sock->s_debug_nr, cmd.cmd_code);
 		}
-	clean:
+clean:
 		brick_string_free(cmd.cmd_str1);
 		if (status < 0)
 			break;
@@ -422,7 +435,7 @@ int handler_thread(void *data)
 	mars_shutdown_socket(sock);
 	mars_put_socket(sock);
 
- done:
+done:
 	MARS_DBG("#%d handler_thread terminating, status = %d\n", sock->s_debug_nr, status);
 
 	debug_nr = sock->s_debug_nr;
@@ -437,24 +450,28 @@ int handler_thread(void *data)
 static int server_get_info(struct server_output *output, struct mars_info *info)
 {
 	struct server_input *input = output->brick->inputs[0];
+
 	return GENERIC_INPUT_CALL(input, mars_get_info, info);
 }
 
 static int server_ref_get(struct server_output *output, struct mref_object *mref)
 {
 	struct server_input *input = output->brick->inputs[0];
+
 	return GENERIC_INPUT_CALL(input, mref_get, mref);
 }
 
 static void server_ref_put(struct server_output *output, struct mref_object *mref)
 {
 	struct server_input *input = output->brick->inputs[0];
+
 	GENERIC_INPUT_CALL(input, mref_put, mref);
 }
 
 static void server_ref_io(struct server_output *output, struct mref_object *mref)
 {
 	struct server_input *input = output->brick->inputs[0];
+
 	GENERIC_INPUT_CALL(input, mref_io, mref);
 }
 
@@ -497,6 +514,7 @@ static int server_switch(struct server_brick *brick)
 		mars_power_led_on((void *)brick, true);
 	} else if (!brick->power.led_off) {
 		struct task_struct *thread;
+
 		mars_power_led_on((void *)brick, false);
 
 		mars_shutdown_socket(sock);
@@ -521,7 +539,7 @@ static int server_switch(struct server_brick *brick)
 
 		mars_power_led_off((void *)brick, true);
 	}
- err:
+err:
 	if (unlikely(status < 0)) {
 		mars_power_led_off((void *)brick, true);
 		mars_shutdown_socket(sock);
@@ -546,7 +564,7 @@ char *server_statistics(struct server_brick *brick, int verbose)
 		 brick->handler_running,
 		 atomic_read(&brick->in_flight));
 
-        return res;
+	return res;
 }
 
 static
@@ -559,6 +577,7 @@ void server_reset_statistics(struct server_brick *brick)
 static int server_mref_aspect_init_fn(struct generic_aspect *_ini)
 {
 	struct server_mref_aspect *ini = (void *)_ini;
+
 	INIT_LIST_HEAD(&ini->cb_head);
 	return 0;
 }
@@ -566,6 +585,7 @@ static int server_mref_aspect_init_fn(struct generic_aspect *_ini)
 static void server_mref_aspect_exit_fn(struct generic_aspect *_ini)
 {
 	struct server_mref_aspect *ini = (void *)_ini;
+
 	CHECK_HEAD_EMPTY(&ini->cb_head);
 }
 
@@ -600,8 +620,8 @@ static int server_output_construct(struct server_output *output)
 
 static struct server_brick_ops server_brick_ops = {
 	.brick_switch = server_switch,
-        .brick_statistics = server_statistics,
-        .reset_statistics = server_reset_statistics,
+	.brick_statistics = server_statistics,
+	.reset_statistics = server_reset_statistics,
 };
 
 static struct server_output_ops server_output_ops = {
@@ -671,7 +691,7 @@ static int _server_thread(void *data)
 
 	MARS_INF("-------- server starting on host '%s' ----------\n", id);
 
-        while (!brick_thread_should_stop() &&
+	while (!brick_thread_should_stop() &&
 	      (!mars_global || !mars_global->global_power.button)) {
 		MARS_DBG("system did not start up\n");
 		brick_msleep(5000);
@@ -679,7 +699,7 @@ static int _server_thread(void *data)
 
 	MARS_INF("-------- server now working on host '%s' ----------\n", id);
 
-        while (!brick_thread_should_stop() || !list_empty(&server_global.brick_anchor)) {
+	while (!brick_thread_should_stop() || !list_empty(&server_global.brick_anchor)) {
 		struct server_brick *brick = NULL;
 		struct mars_socket handler_socket = {};
 
@@ -739,7 +759,7 @@ static int _server_thread(void *data)
 		brick_msleep(100);
 		continue;
 
-	err:
+err:
 		if (brick) {
 			mars_shutdown_socket(&brick->handler_socket);
 			mars_put_socket(&brick->handler_socket);

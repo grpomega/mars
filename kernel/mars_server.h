@@ -29,6 +29,7 @@ struct server_brick {
 	struct mars_socket handler_socket;
 	struct task_struct *handler_thread;
 	struct task_struct *cb_thread;
+
 	wait_queue_head_t startup_event;
 	wait_queue_head_t cb_event;
 	spinlock_t cb_lock;
