@@ -92,16 +92,14 @@ int mars_stat(const char *path, struct kstat *stat, bool use_lstat)
 
 	oldfs = get_fs();
 	set_fs(get_ds());
-	if (use_lstat) {
+	if (use_lstat)
 		status = vfs_lstat((char *)path, stat);
-	} else {
+	else
 		status = vfs_stat((char *)path, stat);
-	}
 	set_fs(oldfs);
 
-	if (likely(status >= 0)) {
+	if (likely(status >= 0))
 		set_lamport(&stat->mtime);
-	}
 
 	return status;
 }
@@ -245,21 +243,18 @@ char *mars_readlink(const char *newpath)
 	res = brick_string_alloc(len + 2);
 
 	status = inode->i_op->readlink(path.dentry, res, len + 1);
-	if (unlikely(status < 0)) {
+	if (unlikely(status < 0))
 		MARS_ERR("cannot read link '%s', status = %d\n", newpath, status);
-	} else {
+	else
 		set_lamport(&inode->i_mtime);
-	}
-
 done_put:
 	path_put(&path);
 
 done_fs:
 	set_fs(oldfs);
 	if (unlikely(status < 0)) {
-		if (unlikely(!res)) {
+		if (unlikely(!res))
 			res = brick_string_alloc(1);
-		}
 		res[0] = '\0';
 	}
 	return res;
@@ -359,9 +354,8 @@ void mars_remaining_space(const char *fspath, loff_t *total, loff_t *remaining)
 #else
 	res = vfs_statfs(path.dentry, &kstatfs);
 #endif
-	if (unlikely(res < 0)) {
+	if (unlikely(res < 0))
 		goto done;
-	}
 
 	*total = _compute_space(&kstatfs, kstatfs.f_blocks);
 	*remaining = _compute_space(&kstatfs, kstatfs.f_bavail);
@@ -538,9 +532,8 @@ int mars_power_button(struct mars_brick *brick, bool val, bool force_off)
 	 */
 	status = brick->ops->brick_switch(brick);
 
-	if (val != oldval) {
+	if (val != oldval)
 		mars_trigger();
-	}
 
 done:
 	return status;
@@ -639,18 +632,14 @@ done:
 static
 int dent_compare(struct mars_dent *a, struct mars_dent *b)
 {
-	if (a->d_class < b->d_class) {
+	if (a->d_class < b->d_class)
 		return -1;
-	}
-	if (a->d_class > b->d_class) {
+	if (a->d_class > b->d_class)
 		return 1;
-	}
-	if (a->d_serial < b->d_serial) {
+	if (a->d_serial < b->d_serial)
 		return -1;
-	}
-	if (a->d_serial > b->d_serial) {
+	if (a->d_serial > b->d_serial)
 		return 1;
-	}
 	return strcmp(a->d_path, b->d_path);
 }
 
@@ -695,9 +684,8 @@ int mars_filler(void *__buf, const char *name, int namlen, loff_t offset,
 
 	cookie->hit = true;
 
-	if (name[0] == '.') {
+	if (name[0] == '.')
 		return 0;
-	}
 
 	class = cookie->checker(cookie->parent, name, namlen, d_type, &prefix, &serial, &use_channel);
 	if (class < 0)
@@ -773,13 +761,11 @@ static int _mars_readdir(struct mars_cookie *cookie)
 	set_fs(get_ds());
 	f = filp_open(cookie->path, O_DIRECTORY | O_RDONLY, 0);
 	set_fs(oldfs);
-	if (unlikely(IS_ERR(f))) {
+	if (unlikely(IS_ERR(f)))
 		return PTR_ERR(f);
-	}
 	mapping = f->f_mapping;
-	if (mapping) {
+	if (mapping)
 		mapping_set_gfp_mask(mapping, mapping_gfp_mask(mapping) & ~(__GFP_IO | __GFP_FS));
-	}
 
 	for (;;) {
 //	remove_this
@@ -842,9 +828,8 @@ int mars_dent_work(struct mars_global *global,
 	global->global_version = version;
 	total_status = _mars_readdir(&cookie);
 
-	if (total_status || !worker) {
+	if (total_status || !worker)
 		goto done;
-	}
 
 	down_write(&global->dent_mutex);
 
@@ -883,9 +868,8 @@ restart:
 			found_dir = true;
 			status = _mars_readdir(&sub_cookie);
 			total_status |= status;
-			if (status < 0) {
+			if (status < 0)
 				MARS_INF("forward: status %d on '%s'\n", status, dent->d_path);
-			}
 		}
 	}
 	bind_to_dent(NULL, &say_channel);
@@ -980,9 +964,8 @@ restart:
 
 		down_read(&global->dent_mutex);
 		total_status |= status;
-		if (status < 0) {
+		if (status < 0)
 			MARS_INF("backwards: status %d on '%s'\n", status, dent->d_path);
-		}
 	}
 	up_read(&global->dent_mutex);
 
@@ -998,9 +981,8 @@ struct mars_dent *_mars_find_dent(struct mars_global *global, const char *path)
 	struct mars_dent *res = NULL;
 	struct list_head *tmp;
 
-	if (!rwsem_is_locked(&global->dent_mutex)) {
+	if (!rwsem_is_locked(&global->dent_mutex))
 		MARS_ERR("dent_mutex not held!\n");
-	}
 
 	for (tmp = global->dent_anchor.next; tmp != &global->dent_anchor; tmp = tmp->next) {
 		struct mars_dent *tmp_dent = container_of(tmp, struct mars_dent, dent_link);
@@ -1047,13 +1029,11 @@ int mars_find_dent_all(struct mars_global *global, char *prefix, struct mars_den
 		struct mars_dent *tmp_dent = container_of(tmp, struct mars_dent, dent_link);
 		int this_len;
 
-		if (!tmp_dent->d_path) {
+		if (!tmp_dent->d_path)
 			continue;
-		}
 		this_len = strlen(tmp_dent->d_path);
-		if (this_len < prefix_len || strncmp(tmp_dent->d_path, prefix, prefix_len)) {
+		if (this_len < prefix_len || strncmp(tmp_dent->d_path, prefix, prefix_len))
 			continue;
-		}
 		res[count++] = tmp_dent;
 		if (count >= max)
 			break;
@@ -1081,20 +1061,17 @@ void mars_free_dent(struct mars_dent *dent)
 	CHECK_HEAD_EMPTY(&dent->dent_link);
 	CHECK_HEAD_EMPTY(&dent->brick_list);
 
-	for (i = 0; i < MARS_ARGV_MAX; i++) {
+	for (i = 0; i < MARS_ARGV_MAX; i++)
 		brick_string_free(dent->d_argv[i]);
-	}
 	brick_string_free(dent->d_args);
 	brick_string_free(dent->d_name);
 	brick_string_free(dent->d_rest);
 	brick_string_free(dent->d_path);
 	brick_string_free(dent->new_link);
-	if (likely(dent->d_parent)) {
+	if (likely(dent->d_parent))
 		dent->d_parent->d_child_count--;
-	}
-	if (dent->d_private_destruct) {
+	if (dent->d_private_destruct)
 		dent->d_private_destruct(dent->d_private);
-	}
 	brick_mem_free(dent->d_private);
 	brick_mem_free(dent);
 }
@@ -1189,9 +1166,8 @@ int mars_free_brick(struct mars_brick *brick)
 	sleeptime = 1000;
 	for (;;) {
 		count = atomic_read(&brick->mref_object_layout.alloc_count);
-		if (likely(!count)) {
+		if (likely(!count))
 			break;
-		}
 		if (maxsleep > 0) {
 			MARS_WRN("MEMLEAK: brick '%s' has %d mrefs allocated (total = %d, maxsleep = %d)\n",
 				brick->brick_path,
@@ -1310,9 +1286,8 @@ struct mars_brick *mars_make_brick(struct mars_global *global,
 	 */
 	down_write(&global->brick_mutex);
 	list_add(&res->global_brick_link, &global->brick_anchor);
-	if (belongs) {
+	if (belongs)
 		list_add_tail(&res->dent_brick_link, &belongs->brick_list);
-	}
 	up_write(&global->brick_mutex);
 
 	return res;
@@ -1351,9 +1326,8 @@ int mars_kill_brick(struct mars_brick *brick)
 		up_write(&global->brick_mutex);
 	}
 
-	if (brick->show_status) {
+	if (brick->show_status)
 		brick->show_status(brick, true);
-	}
 
 	// start shutdown
 	set_button_wait((void *)brick, false, true, 0);
@@ -1421,30 +1395,25 @@ int mars_kill_brick_all(struct mars_global *global, struct list_head *anchor, bo
 
 	if (!anchor || !anchor->next)
 		goto done;
-	if (global) {
+	if (global)
 		down_write(&global->brick_mutex);
-	}
 	while (!list_empty(anchor)) {
 		struct list_head *tmp = anchor->next;
 		struct mars_brick *brick;
 
-		if (use_dent_link) {
+		if (use_dent_link)
 			brick = container_of(tmp, struct mars_brick, dent_brick_link);
-		} else {
+		else
 			brick = container_of(tmp, struct mars_brick, global_brick_link);
-		}
 		list_del_init(tmp);
-		if (global) {
+		if (global)
 			up_write(&global->brick_mutex);
-		}
 		status |= mars_kill_brick(brick);
-		if (global) {
+		if (global)
 			down_write(&global->brick_mutex);
-		}
 	}
-	if (global) {
+	if (global)
 		up_write(&global->brick_mutex);
-	}
 done:
 	return status;
 }
@@ -1460,33 +1429,27 @@ int mars_kill_brick_when_possible(struct mars_global *global,
 	struct list_head *tmp;
 
 restart:
-	if (global) {
+	if (global)
 		down_write(&global->brick_mutex);
-	}
 	for (tmp = anchor->next; tmp != anchor; tmp = tmp->next) {
 		struct mars_brick *brick;
 		int status;
 
-		if (use_dent_link) {
+		if (use_dent_link)
 			brick = container_of(tmp, struct mars_brick, dent_brick_link);
-		} else {
+		else
 			brick = container_of(tmp, struct mars_brick, global_brick_link);
-		}
 		// only kill the right brick types
-		if (type && brick->type != type) {
+		if (type && brick->type != type)
 			continue;
-		}
 		// only kill marked bricks
-		if (!brick->killme) {
+		if (!brick->killme)
 			continue;
-		}
 		// only kill unconnected bricks
-		if (brick->nr_outputs > 0 && brick->outputs[0] && brick->outputs[0]->nr_connected > 0) {
+		if (brick->nr_outputs > 0 && brick->outputs[0] && brick->outputs[0]->nr_connected > 0)
 			continue;
-		}
-		if (!even_on && (brick->power.button || !brick->power.led_off)) {
+		if (!even_on && (brick->power.button || !brick->power.led_off))
 			continue;
-		}
 		/* Workaround FIXME:
 		 * only kill bricks which have not been touched during the current mars_dent_work() round.
 		 * some bricks like aio seem to have races between startup and termination of threads.
@@ -1494,31 +1457,27 @@ restart:
 		 * OTOH, frequently doing useless starts/stops is no good idea.
 		 * CHECK: how to avoid too frequent switching by other means?
 		 */
-		if (brick->kill_round++ < 1) {
+		if (brick->kill_round++ < 1)
 			continue;
-		}
 
 		list_del_init(tmp);
-		if (global) {
+		if (global)
 			up_write(&global->brick_mutex);
-		}
 
 		MARS_DBG("KILLING '%s'\n", brick->brick_name);
 		status = mars_kill_brick(brick);
 
-		if (status >= 0) {
+		if (status >= 0)
 			return_status++;
-		} else {
+		else
 			return status;
-		}
 		/* The list may have changed during the open lock
 		 * in unpredictable ways.
 		 */
 		goto restart;
 	}
-	if (global) {
+	if (global)
 		up_write(&global->brick_mutex);
-	}
 	return return_status;
 }
 EXPORT_SYMBOL_GPL(mars_kill_brick_when_possible);
@@ -1578,13 +1537,11 @@ char *_backskip_replace(int line, const char *path, char delim, bool insert, con
 
 	res = _brick_string_alloc(total_len + 2, line);
 
-	while (pos > 0 && path[pos] != '/') {
+	while (pos > 0 && path[pos] != '/')
 		pos--;
-	}
 	if (delim != '/') {
-		while (pos < path_len && path[pos] != delim) {
+		while (pos < path_len && path[pos] != delim)
 			pos++;
-		}
 	}
 	memcpy(res, path, pos);
 
@@ -1592,9 +1549,8 @@ char *_backskip_replace(int line, const char *path, char delim, bool insert, con
 	plus = vscnprintf(res + pos, total_len - pos, fmt, args);
 	va_end(args);
 
-	if (insert) {
+	if (insert)
 		strncpy(res + pos + plus, path + pos + 1, total_len - pos - plus);
-	}
 	return res;
 }
 EXPORT_SYMBOL_GPL(_backskip_replace);
@@ -1609,9 +1565,8 @@ struct mars_brick *path_find_brick(struct mars_global *global, const void *brick
 	fullpath = vpath_make(fmt, &args);
 	va_end(args);
 
-	if (!fullpath) {
+	if (!fullpath)
 		return NULL;
-	}
 	res = mars_find_brick(global, brick_type, fullpath);
 	brick_string_free(fullpath);
 	return res;
@@ -1655,14 +1610,12 @@ struct mars_brick *make_brick_all(
 
 	// treat variable arguments
 	va_start(args, prev_count);
-	if (new_fmt) {
+	if (new_fmt)
 		new_path = _new_path = vpath_make(new_fmt, &args);
-	} else {
+	else
 		new_path = new_name;
-	}
-	for (i = 0; i < prev_count; i++) {
+	for (i = 0; i < prev_count; i++)
 		paths[i] = vpath_make(prev_fmt[i], &args);
-	}
 	va_end(args);
 
 	if (!new_path) {
@@ -1673,18 +1626,16 @@ struct mars_brick *make_brick_all(
 	// get old switch state
 	brick = mars_find_brick(global, NULL, new_path);
 	switch_state = false;
-	if (brick) {
+	if (brick)
 		switch_state = brick->power.button;
-	}
 	// override?
 	if (switch_override > 1)
 		switch_state = true;
 	else if (switch_override < 0)
 		switch_state = false;
 	// even higher override
-	if (global && !global->global_power.button) {
+	if (global && !global->global_power.button)
 		switch_state = false;
-	}
 
 	// brick already existing?
 	if (brick) {
@@ -1797,9 +1748,8 @@ do_switch:
 	if (setup_fn) {
 		int setup_status = setup_fn(brick, private);
 
-		if (setup_status <= 0) {
+		if (setup_status <= 0)
 			switch_state = 0;
-		}
 	}
 
 	// switch on/off (may fail silently, but responsibility is at the workers)
@@ -1808,15 +1758,13 @@ do_switch:
 	goto done;
 
 err:
-	if (brick) {
+	if (brick)
 		mars_kill_brick(brick);
-	}
 	brick = NULL;
 done:
 	for (i = 0; i < prev_count; i++) {
-		if (paths[i]) {
+		if (paths[i])
 			brick_string_free(paths[i]);
-		}
 	}
 	if (_new_path)
 		brick_string_free(_new_path);
@@ -1838,9 +1786,8 @@ void _show_one(struct mars_brick *test, int *brick_count)
 {
 	int i;
 
-	if (*brick_count) {
+	if (*brick_count)
 		MARS_DBG("---------\n");
-	}
 	MARS_DBG("BRICK type = %s path = '%s' name = '%s' "
 		  "size_hint=%d "
 		  "mrefs_alloc = %d "
@@ -1885,9 +1832,8 @@ void _show_one(struct mars_brick *test, int *brick_count)
 	for (i = 0; i < test->type->max_outputs; i++) {
 		struct mars_output *output = test->outputs[i];
 
-		if (output) {
+		if (output)
 			MARS_DBG("    output %d nr_connected = %d\n", i, output->nr_connected);
-		}
 	}
 }
 

@@ -55,9 +55,8 @@ static int _request_info(struct client_output *output)
 
 	MARS_DBG("\n");
 	status = mars_send_struct(&output->socket, &cmd, mars_cmd_meta);
-	if (unlikely(status < 0)) {
+	if (unlikely(status < 0))
 		MARS_DBG("send of getinfo failed, status = %d\n", status);
-	}
 	return status;
 }
 
@@ -120,9 +119,8 @@ static int _connect(struct client_output *output, const char *str)
 			goto done;
 		}
 	}
-	if (status >= 0) {
+	if (status >= 0)
 		status = _request_info(output);
-	}
 
 done:
 	if (status < 0) {
@@ -196,9 +194,8 @@ static void client_ref_put(struct client_output *output, struct mref_object *mre
 	if (!_mref_put(mref))
 		goto out_return;
 	mref_a = client_mref_get_aspect(output->brick, mref);
-	if (mref_a && mref_a->do_dealloc) {
+	if (mref_a && mref_a->do_dealloc)
 		brick_block_free(mref->ref_data, mref_a->alloc_len);
-	}
 	_mref_free(mref);
 out_return:;
 }
@@ -225,13 +222,11 @@ static void client_ref_io(struct client_output *output, struct mref_object *mref
 	int error = -EINVAL;
 
 	mref_a = client_mref_get_aspect(output->brick, mref);
-	if (unlikely(!mref_a)) {
+	if (unlikely(!mref_a))
 		goto error;
-	}
 
-	while (output->brick->max_flying > 0 && atomic_read(&output->fly_count) > output->brick->max_flying) {
+	while (output->brick->max_flying > 0 && atomic_read(&output->fly_count) > output->brick->max_flying)
 		brick_msleep(1000 * 2 / HZ);
-	}
 
 	atomic_inc(&mars_global_io_flying);
 	atomic_inc(&output->fly_count);
@@ -349,9 +344,8 @@ done:
 		}
 	}
 
-	if (status < 0) {
+	if (status < 0)
 		MARS_WRN("receiver thread terminated with status = %d, recv_error = %d\n", status, output->recv_error);
-	}
 
 	mars_shutdown_socket(&output->socket);
 	wake_up_interruptible(&output->receiver.run_event);
@@ -537,12 +531,10 @@ static int sender_thread(void *data)
 		}
 	}
 
-	if (status < 0) {
+	if (status < 0)
 		MARS_WRN("sender thread terminated with status = %d\n", status);
-	}
-	if (do_kill) {
+	if (do_kill)
 		_kill_socket(output);
-	}
 
 	/* Signal error on all pending IO requests.
 	 * We have no other chance (except probably delaying
@@ -578,18 +570,16 @@ static int client_switch(struct client_brick *brick)
 				goto done;
 			}
 		}
-		if (output->sender.thread) {
+		if (output->sender.thread)
 			mars_power_led_on((void *)brick, true);
-		}
 	} else {
 		if (brick->power.led_off)
 			goto done;
 		mars_power_led_on((void *)brick, false);
 		_kill_thread(&output->sender, "sender");
 		brick->connection_state = 0;
-		if (!output->sender.thread) {
+		if (!output->sender.thread)
 			mars_power_led_off((void *)brick, !output->sender.thread);
-		}
 	}
 done:
 	return status;
@@ -661,9 +651,8 @@ static int client_output_construct(struct client_output *output)
 
 	output->hash_table = brick_block_alloc(0, PAGE_SIZE);
 
-	for (i = 0; i < CLIENT_HASH_MAX; i++) {
+	for (i = 0; i < CLIENT_HASH_MAX; i++)
 		INIT_LIST_HEAD(&output->hash_table[i]);
-	}
 	spin_lock_init(&output->lock);
 	INIT_LIST_HEAD(&output->mref_list);
 	INIT_LIST_HEAD(&output->wait_list);

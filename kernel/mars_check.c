@@ -72,9 +72,8 @@ static void check_endio(struct generic_callback *cb)
 #ifdef CHECK_LOCK
 	spin_lock(&output->check_lock);
 
-	if (list_empty(&mref_a->mref_head)) {
+	if (list_empty(&mref_a->mref_head))
 		CHECK_ERR(output, "list entry missing on %p\n", mref);
-	}
 	list_del_init(&mref_a->mref_head);
 
 	spin_unlock(&output->check_lock);
@@ -102,16 +101,14 @@ static void dump_mem(void *data, int len)
 		unsigned char byte = ((unsigned char*)data)[i];
 
 		if (!(i % 8)) {
-			if (tmp != buf) {
+			if (tmp != buf)
 				say(-1, "%4d: %s\n", i, buf);
-			}
 			tmp = buf;
 		}
 		tmp += scnprintf(tmp, 1024 - i * 3, " %02x", byte);
 	}
-	if (tmp != buf) {
+	if (tmp != buf)
 		say(-1, "%4d: %s\n", i, buf);
-	}
 	brick_string_free(buf);
 }
 

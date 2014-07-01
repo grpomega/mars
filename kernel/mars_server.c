@@ -125,9 +125,8 @@ void server_endio(struct generic_callback *cb)
 	mref = mref_a->object;
 	CHECK_PTR(mref, err);
 	LAST_CALLBACK(cb);
-	if (unlikely(cb != &mref->_object_cb)) {
+	if (unlikely(cb != &mref->_object_cb))
 		MARS_ERR("bad cb pointer %p != %p\n", cb, &mref->_object_cb);
-	}
 
 	brick = mref_a->brick;
 	if (unlikely(!brick)) {
@@ -138,11 +137,10 @@ void server_endio(struct generic_callback *cb)
 	rw = mref->ref_rw;
 
 	spin_lock(&brick->cb_lock);
-	if (rw) {
+	if (rw)
 		list_add_tail(&mref_a->cb_head, &brick->cb_write_list);
-	} else {
+	else
 		list_add_tail(&mref_a->cb_head, &brick->cb_read_list);
-	}
 	spin_unlock(&brick->cb_lock);
 
 	wake_up_interruptible(&brick->cb_event);
@@ -223,9 +221,8 @@ int _set_server_aio_params(struct mars_brick *_brick, void *private)
 	struct aio_brick *aio_brick = (void *)_brick;
 
 //	remove_this
-	if (_brick->type == (void *)_sio_brick_type) {
+	if (_brick->type == (void *)_sio_brick_type)
 		return _set_server_sio_params(_brick, private);
-	}
 //	end_remove_this
 	if (_brick->type != (void *)_aio_brick_type) {
 		MARS_ERR("bad brick type\n");
@@ -243,13 +240,11 @@ int _set_server_bio_params(struct mars_brick *_brick, void *private)
 {
 	struct bio_brick *bio_brick;
 
-	if (_brick->type == (void *)_aio_brick_type) {
+	if (_brick->type == (void *)_aio_brick_type)
 		return _set_server_aio_params(_brick, private);
-	}
 //	remove_this
-	if (_brick->type == (void *)_sio_brick_type) {
+	if (_brick->type == (void *)_sio_brick_type)
 		return _set_server_sio_params(_brick, private);
-	}
 //	end_remove_this
 	if (_brick->type != (void *)_bio_brick_type) {
 		MARS_ERR("bad brick type\n");
@@ -321,14 +316,12 @@ int handler_thread(void *data)
 			struct mars_info info = {};
 
 			status = GENERIC_INPUT_CALL(brick->inputs[0], mars_get_info, &info);
-			if (status < 0) {
+			if (status < 0)
 				break;
-			}
 			down(&brick->socket_sem);
 			status = mars_send_struct(sock, &cmd, mars_cmd_meta);
-			if (status >= 0) {
+			if (status >= 0)
 				status = mars_send_struct(sock, &info, mars_info_meta);
-			}
 			up(&brick->socket_sem);
 			break;
 		}
@@ -399,9 +392,8 @@ int handler_thread(void *data)
 				0);
 			if (likely(prev)) {
 				status = generic_connect((void *)brick->inputs[0], (void *)prev->outputs[0]);
-				if (unlikely(status < 0)) {
+				if (unlikely(status < 0))
 					MARS_ERR("#%d cannot connect to '%s'\n", sock->s_debug_nr, path);
-				}
 				prev->killme = true;
 			} else {
 				MARS_ERR("#%d cannot find brick '%s'\n", sock->s_debug_nr, path);
@@ -764,9 +756,8 @@ err:
 			mars_shutdown_socket(&brick->handler_socket);
 			mars_put_socket(&brick->handler_socket);
 			status = mars_kill_brick((void *)brick);
-			if (status < 0) {
+			if (status < 0)
 				BRICK_ERR("kill status = %d, giving up\n", status);
-			}
 			brick = NULL;
 		}
 		brick_msleep(2000);

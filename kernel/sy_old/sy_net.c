@@ -18,9 +18,8 @@ char *_mars_translate_hostname(const char *name)
 	struct mars_dent *test;
 	char *tmp;
 
-	if (unlikely(!global)) {
+	if (unlikely(!global))
 		goto done;
-	}
 
 	for (tmp = res; *tmp; tmp++) {
 		if (*tmp == ':') {
@@ -30,9 +29,8 @@ char *_mars_translate_hostname(const char *name)
 	}
 
 	tmp = path_make("/mars/ips/ip-%s", res);
-	if (unlikely(!tmp)) {
+	if (unlikely(!tmp))
 		goto done;
-	}
 
 	test = mars_find_dent(global, tmp);
 	if (test && test->new_link) {

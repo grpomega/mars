@@ -153,11 +153,10 @@ void _enqueue(struct aio_threadinfo *tinfo, struct aio_mref_aspect *mref_a, int 
 
 	spin_lock(&tinfo->lock);
 
-	if (at_end) {
+	if (at_end)
 		list_add_tail(&mref_a->io_head, &tinfo->mref_list[prio]);
-	} else {
+	else
 		list_add(&mref_a->io_head, &tinfo->mref_list[prio]);
-	}
 	tinfo->queued[prio]++;
 	atomic_inc(&tinfo->queued_sum);
 
@@ -258,9 +257,8 @@ static int aio_ref_get(struct aio_output *output, struct mref_object *mref)
 	}
 
 	total_size = get_total_size(output);
-	if (unlikely(total_size < 0)) {
+	if (unlikely(total_size < 0))
 		return total_size;
-	}
 	mref->ref_total_size = total_size;
 
 	if (mref->ref_initialized) {
@@ -296,9 +294,8 @@ static void aio_ref_put(struct aio_output *output, struct mref_object *mref)
 	struct file *file;
 	struct aio_mref_aspect *mref_a;
 
-	if (!_mref_put(mref)) {
+	if (!_mref_put(mref))
 		goto done;
-	}
 
 	if (likely(output->mf)) {
 		file = output->mf->mf_filp;
@@ -339,12 +336,10 @@ void _complete(struct aio_output *output, struct aio_mref_aspect *mref_a, int er
 	CHECKED_CALLBACK(mref, err, err_found);
 
 done:
-	if (mref->ref_rw) {
+	if (mref->ref_rw)
 		atomic_dec(&output->write_count);
-	} else {
+	else
 		atomic_dec(&output->read_count);
-	}
-
 	mf_remove_dirty(output->mf, &mref_a->di);
 
 	aio_ref_put(output, mref);
@@ -405,16 +400,14 @@ static void aio_ref_io(struct aio_output *output, struct mref_object *mref)
 		atomic_inc(&output->read_count);
 	}
 
-	if (unlikely(!output->mf || !output->mf->mf_filp)) {
+	if (unlikely(!output->mf || !output->mf->mf_filp))
 		goto done;
-	}
 
 	mapfree_set(output->mf, mref->ref_pos, -1);
 
 	mref_a = aio_mref_get_aspect(output->brick, mref);
-	if (unlikely(!mref_a)) {
+	if (unlikely(!mref_a))
 		goto done;
-	}
 
 	_enqueue(tinfo, mref_a, mref->ref_prio, true);
 	goto out_return;
@@ -484,9 +477,8 @@ static int aio_submit_dummy(struct aio_output *output)
 	res = sys_io_submit(output->ctxp, 1, &iocbp);
 	set_fs(oldfs);
 
-	if (likely(res >= 0)) {
+	if (likely(res >= 0))
 		atomic_inc(&output->submit_count);
-	}
 	return res;
 }
 
@@ -499,9 +491,8 @@ int aio_start_thread(
 {
 	int j;
 
-	for (j = 0; j < MARS_PRIO_NR; j++) {
+	for (j = 0; j < MARS_PRIO_NR; j++)
 		INIT_LIST_HEAD(&tinfo->mref_list[j]);
-	}
 	tinfo->output = output;
 	spin_lock_init(&tinfo->lock);
 	init_waitqueue_head(&tinfo->event);
@@ -529,9 +520,8 @@ void aio_stop_thread(struct aio_output *output, int i, bool do_submit_dummy)
 			MARS_DBG("submitting dummy for wakeup %d...\n", i);
 			use_fake_mm();
 			aio_submit_dummy(output);
-			if (likely(current->mm)) {
+			if (likely(current->mm))
 				unuse_fake_mm();
-			}
 		}
 
 		// wait for termination
@@ -540,11 +530,10 @@ void aio_stop_thread(struct aio_output *output, int i, bool do_submit_dummy)
 			tinfo->terminate_event,
 			tinfo->terminated,
 			(60 - i * 2) * HZ);
-		if (likely(tinfo->terminated)) {
+		if (likely(tinfo->terminated))
 			brick_thread_stop(tinfo->thread);
-		} else {
+		else
 			MARS_ERR("thread %d did not terminate - leaving a zombie\n", i);
-		}
 	}
 }
 
@@ -593,9 +582,8 @@ void aio_sync_all(struct aio_output *output, struct list_head *tmp_list)
 
 	output->fdsync_active = false;
 	wake_up_interruptible_all(&output->fdsync_event);
-	if (err < 0) {
+	if (err < 0)
 		MARS_ERR("FDSYNC error %d\n", err);
-	}
 
 	/* Signal completion for the whole list.
 	 * No locking needed, it's on the stack.
@@ -640,9 +628,8 @@ int aio_sync_thread(void *data)
 		}
 		spin_unlock(&tinfo->lock);
 
-		if (!list_empty(&tmp_list)) {
+		if (!list_empty(&tmp_list))
 			aio_sync_all(output, &tmp_list);
-		}
 	}
 
 	MARS_DBG("sync thread has stopped.\n");
@@ -688,9 +675,8 @@ static int aio_event_thread(void *data)
 		count = sys_io_getevents(output->ctxp, 1, MARS_MAX_AIO_READ, events, &timeout);
 		set_fs(oldfs);
 
-		if (likely(count > 0)) {
+		if (likely(count > 0))
 			atomic_sub(count, &output->submit_count);
-		}
 
 		for (i = 0; i < count; i++) {
 			struct aio_mref_aspect *mref_a = (void *)events[i].data;
@@ -801,9 +787,8 @@ void _destroy_ioctx(struct aio_output *output)
 	}
 
 done:
-	if (likely(current->mm)) {
+	if (likely(current->mm))
 		unuse_fake_mm();
-	}
 }
 
 static
@@ -863,9 +848,8 @@ int _create_ioctx(struct aio_output *output)
 	}
 
 done:
-	if (likely(current->mm)) {
+	if (likely(current->mm))
 		unuse_fake_mm();
-	}
 	return err;
 }
 
@@ -894,9 +878,8 @@ static int aio_submit_thread(void *data)
 			HZ / 4);
 
 		mref_a = _dequeue(tinfo);
-		if (!mref_a) {
+		if (!mref_a)
 			continue;
-		}
 
 		mref = mref_a->object;
 		status = -EINVAL;
@@ -905,9 +888,8 @@ static int aio_submit_thread(void *data)
 		mapfree_set(output->mf, mref->ref_pos, -1);
 
 		mref_a->di.dirty_stage = 0;
-		if (mref->ref_rw) {
+		if (mref->ref_rw)
 			mf_insert_dirty(output->mf, &mref_a->di);
-		}
 
 		mref->ref_total_size = get_total_size(output);
 
@@ -921,9 +903,8 @@ static int aio_submit_thread(void *data)
 				if (mref->ref_len > len)
 					mref->ref_len = len;
 			} else {
-				if (!mref_a->start_jiffies) {
+				if (!mref_a->start_jiffies)
 					mref_a->start_jiffies = jiffies;
-				}
 				if ((long long)jiffies - mref_a->start_jiffies <= mref->ref_timeout) {
 					if (atomic_read(&tinfo->queued_sum) <= 0) {
 						atomic_inc(&output->total_msleep_count);
@@ -943,28 +924,24 @@ static int aio_submit_thread(void *data)
 			mref_a->di.dirty_stage = 1;
 			status = aio_submit(output, mref_a, false);
 
-			if (likely(status != -EAGAIN)) {
+			if (likely(status != -EAGAIN))
 				break;
-			}
 			mref_a->di.dirty_stage = 0;
 			atomic_inc(&output->total_delay_count);
 			brick_msleep(sleeptime);
-			if (sleeptime < 100) {
+			if (sleeptime < 100)
 				sleeptime++;
-			}
 		}
 
 error:
-		if (unlikely(status < 0)) {
+		if (unlikely(status < 0))
 			_complete_mref(output, mref, status);
-		}
 	}
 
 	MARS_DBG("submit thread has stopped, status = %d.\n", err);
 
-	if (likely(current->mm)) {
+	if (likely(current->mm))
 		unuse_fake_mm();
-	}
 
 	tinfo->terminated = true;
 	wake_up_interruptible_all(&tinfo->terminate_event);
@@ -1164,9 +1141,8 @@ done:
 err:
 	MARS_ERR("status = %d\n", status);
 cleanup:
-	if (brick->power.led_off) {
+	if (brick->power.led_off)
 		goto done;
-	}
 
 	mars_power_led_on((void *)brick, false);
 
@@ -1199,9 +1175,8 @@ static int aio_output_construct(struct aio_output *output)
 
 static int aio_output_destruct(struct aio_output *output)
 {
-	if (unlikely(output->fd >= 0)) {
+	if (unlikely(output->fd >= 0))
 		MARS_ERR("active fd = %d detected\n", output->fd);
-	}
 	return 0;
 }
 

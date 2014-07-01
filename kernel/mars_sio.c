@@ -52,9 +52,8 @@ static int sio_ref_get(struct sio_output *output, struct mref_object *mref)
 				}
 			}
 			// Shorten below EOF, but allow special case
-			if (mref->ref_len > len && len > 0) {
+			if (mref->ref_len > len && len > 0)
 				mref->ref_len = len;
-			}
 		}
 	}
 
@@ -87,9 +86,8 @@ static void sio_ref_put(struct sio_output *output, struct mref_object *mref)
 	if (!_mref_put(mref))
 		goto out_return;
 	file = output->filp;
-	if (file) {
+	if (file)
 		mref->ref_total_size = i_size_read(file->f_mapping->host);
-	}
 
 	mref_a = sio_mref_get_aspect(output->brick, mref);
 	if (mref_a && mref_a->do_dealloc) {
@@ -131,9 +129,8 @@ int read_aops(struct sio_output *output, struct mref_object *mref)
 	ret = vfs_read(output->filp, mref->ref_data, len, &pos);
 	set_fs(oldfs);
 
-	if (unlikely(ret < 0)) {
+	if (unlikely(ret < 0))
 		MARS_ERR("%p %p status=%d\n", output, mref, ret);
-	}
 	return ret;
 }
 
@@ -147,9 +144,8 @@ static void sync_file(struct sio_output *output)
 #else
 	ret = vfs_fsync(file, 1);
 #endif
-	if (unlikely(ret)) {
+	if (unlikely(ret))
 		MARS_ERR("syncing pages failed: %d\n", ret);
-	}
 	goto out_return;
 out_return:;
 }
@@ -429,9 +425,8 @@ static int sio_switch(struct sio_brick *brick)
 			goto done;
 		}
 
-		if ((mapping = output->filp->f_mapping)) {
+		if ((mapping = output->filp->f_mapping))
 			mapping_set_gfp_mask(mapping, mapping_gfp_mask(mapping) & ~(__GFP_IO | __GFP_FS));
-		}
 
 		MARS_INF("opened file '%s' as %p\n", path, output->filp);
 

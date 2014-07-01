@@ -38,9 +38,8 @@ char *my_id(void)
 	if (!id) {
 		//down_read(&uts_sem); // FIXME: this is currenty not EXPORTed from the kernel!
 		u = utsname();
-		if (u) {
+		if (u)
 			id = brick_strdup(u->nodename);
-		}
 		//up_read(&uts_sem);
 	}
 	return id;
@@ -177,9 +176,8 @@ void exit_mars(void)
 {
 	MARS_INF("exit_mars()\n");
 
-	if (mars_tfm) {
+	if (mars_tfm)
 		crypto_free_hash(mars_tfm);
-	}
 
 	if (id) {
 		brick_string_free(id);
