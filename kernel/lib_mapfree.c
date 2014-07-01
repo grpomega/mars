@@ -274,7 +274,7 @@ int mapfree_thread(void *data)
 
 void mf_insert_dirty(struct mapfree_info *mf, struct dirty_info *di)
 {
-	if (likely(di->dirty_mref)) {
+	if (likely(di->dirty_aio)) {
 		spin_lock(&mf->mf_lock);
 		list_del(&di->dirty_head);
 		list_add(&di->dirty_head, &mf->mf_dirty_anchor);
@@ -300,16 +300,16 @@ void mf_get_dirty(struct mapfree_info *mf, loff_t *min, loff_t *max, int min_sta
 	spin_lock(&mf->mf_lock);
 	for (tmp = mf->mf_dirty_anchor.next; tmp != &mf->mf_dirty_anchor; tmp = tmp->next) {
 		struct dirty_info *di = container_of(tmp, struct dirty_info, dirty_head);
-		struct mref_object *mref = di->dirty_mref;
+		struct aio_object *aio = di->dirty_aio;
 
-		if (unlikely(!mref))
+		if (unlikely(!aio))
 			continue;
 		if (di->dirty_stage < min_stage || di->dirty_stage > max_stage)
 			continue;
-		if (mref->ref_pos < *min)
-			*min = mref->ref_pos;
-		if (mref->ref_pos + mref->ref_len > *max)
-			*max = mref->ref_pos + mref->ref_len;
+		if (aio->io_pos < *min)
+			*min = aio->io_pos;
+		if (aio->io_pos + aio->io_len > *max)
+			*max = aio->io_pos + aio->io_len;
 	}
 	spin_unlock(&mf->mf_lock);
 }
