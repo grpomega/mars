@@ -34,5 +34,8 @@
 
 #ifdef __USE_COMPAT
 
+int _provisionary_wrapper_to_vfs_symlink(const char __user *oldname,
+					 const char __user *newname);
+
 #endif
 #endif

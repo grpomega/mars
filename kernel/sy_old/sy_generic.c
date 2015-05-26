@@ -34,6 +34,7 @@
 #include <linux/file.h>
 #include <linux/blkdev.h>
 #include <linux/fs.h>
+#include <linux/mount.h>
 #include <linux/utsname.h>
 
 #include "strategy.h"
@@ -97,6 +98,62 @@ const struct meta mars_dent_meta[] = {
 };
 EXPORT_SYMBOL_GPL(mars_dent_meta);
 
+//      remove_this
+#ifdef __USE_COMPAT
+/////////////////////////////////////////////////////////////////////
+
+/* The _provisionary_*() functions will be removed upstreams!
+ * They serve the only TRANSITIONAL purpose.
+ */
+
+#ifdef SB_FREEZE_LEVELS
+#define __NEW_PATH_CREATE
+#endif
+
+/* code is blindly stolen from symlinkat()
+ * and later adapted to various kernels
+ */
+int _provisionary_wrapper_to_vfs_symlink(const char __user *oldname,
+					 const char __user *newname)
+{
+	const int newdfd = AT_FDCWD;
+	int error;
+	char *from;
+	struct dentry *dentry;
+	struct path path;
+
+	from = (char *)oldname;
+
+	dentry = user_path_create(newdfd, newname, &path, 0);
+	error = PTR_ERR(dentry);
+	if (IS_ERR(dentry))
+		goto out_putname;
+
+#ifndef __NEW_PATH_CREATE
+	error = mnt_want_write(path.mnt);
+	if (error)
+		goto out_dput;
+#endif
+	error = security_path_symlink(&path, dentry, from);
+	if (error)
+		goto out_drop_write;
+	error = vfs_symlink(path.dentry->d_inode, dentry, from);
+out_drop_write:
+#ifdef __NEW_PATH_CREATE
+	done_path_create(&path, dentry);
+#else
+	mnt_drop_write(path.mnt);
+out_dput:
+	dput(dentry);
+	mutex_unlock(&path.dentry->d_inode->i_mutex);
+	path_put(&path);
+#endif
+out_putname:
+	return error;
+}
+
+#endif
+//      end_remove_this
 /////////////////////////////////////////////////////////////////////
 
 // some helpers
@@ -205,7 +262,11 @@ int mars_symlink(const char *oldpath, const char *newpath, const struct timespec
 
 	(void)sys_unlink(tmp);
 
+#ifdef __USE_COMPAT
+	status = _provisionary_wrapper_to_vfs_symlink(oldpath, tmp);
+#else
 	status = sys_symlink(oldpath, tmp);
+#endif
 
 	if (status >= 0) {
 		memcpy(&times[1], &times[0], sizeof(struct timespec));
