@@ -47,6 +47,8 @@
 #include <linux/kthread.h>
 #include <linux/statfs.h>
 
+#include "../provisionary_wrapper.h"
+
 #define SKIP_BIO false
 
 //      remove_this
@@ -57,6 +59,10 @@
  */
 #if !defined(__WAIT_ATOMIC_T_KEY_INITIALIZER) || defined(RHEL_RELEASE)
 #define HAS_VFS_READDIR
+#endif
+
+#ifdef RENAME_NOREPLACE
+#define __HAS_RENAME2
 #endif
 
 //      end_remove_this
@@ -189,6 +195,107 @@ out_dput:
 #endif
 	return error;
 }
+
+/* HACK: provisionary wrapper having some restrictions:
+ *  - oldname and newname must reside in the same directory
+ *  - standard case, no mountpoints inbetween
+ *  - no full protection against races with concurrent renames
+ *    (they simply don't occur at all because of single-threadedness)
+ *  - no security checks (we are anyway called from kernel code)
+ *
+ * THIS IS NO FINAL SOLUTION!
+ */
+int _provisionary_wrapper_to_vfs_rename(const char __user *oldname,
+					const char __user *newname)
+{
+	struct path oldpath;
+	struct path newpath;
+	struct dentry *old_dentry;
+	struct dentry *new_dentry;
+	struct dentry *trap;
+	int error;
+
+	error = kern_path(oldname, 0, &oldpath);
+	if (unlikely(error))
+		goto exit;
+	old_dentry = oldpath.dentry;
+
+	new_dentry = kern_path_create(AT_FDCWD, newname, &newpath, 0);
+	error = PTR_ERR(new_dentry);
+	if (IS_ERR(new_dentry)) {
+		if (unlikely(error != -EEXIST))
+			goto exit1;
+		error = kern_path(newname, 0, &newpath);
+		if (error)
+			goto exit1;
+		new_dentry = newpath.dentry;
+
+		error = mnt_want_write(oldpath.mnt);
+		if (error)
+			goto exit3;
+
+		trap = lock_rename(new_dentry->d_parent, old_dentry->d_parent);
+
+#ifdef __HAS_RENAME2
+		error = vfs_rename(old_dentry->d_parent->d_inode, old_dentry,
+				   new_dentry->d_parent->d_inode, new_dentry, NULL, 0);
+#elif defined(FL_DELEG)
+		error = vfs_rename(old_dentry->d_parent->d_inode, old_dentry,
+				   new_dentry->d_parent->d_inode, new_dentry, NULL);
+#else
+		error = vfs_rename(old_dentry->d_parent->d_inode, old_dentry,
+				   new_dentry->d_parent->d_inode, new_dentry);
+#endif
+
+		unlock_rename(new_dentry->d_parent, old_dentry->d_parent);
+
+		mnt_drop_write(oldpath.mnt);
+
+exit3:
+		path_put(&newpath);
+	} else {
+		mutex_unlock(&newpath.dentry->d_inode->i_mutex);
+
+#ifndef __NEW_PATH_CREATE
+		error = mnt_want_write(oldpath.mnt);
+		if (error)
+			goto exit2;
+#endif
+
+		trap = lock_rename(new_dentry->d_parent, old_dentry->d_parent);
+
+#ifdef __HAS_RENAME2
+		error = vfs_rename(old_dentry->d_parent->d_inode, old_dentry,
+				   new_dentry->d_parent->d_inode, new_dentry, NULL, 0);
+#elif defined(FL_DELEG)
+		error = vfs_rename(old_dentry->d_parent->d_inode, old_dentry,
+				   new_dentry->d_parent->d_inode, new_dentry, NULL);
+#else
+		error = vfs_rename(old_dentry->d_parent->d_inode, old_dentry,
+				   new_dentry->d_parent->d_inode, new_dentry);
+#endif
+
+		unlock_rename(new_dentry->d_parent, old_dentry->d_parent);
+
+#ifndef __NEW_PATH_CREATE
+		mnt_drop_write(oldpath.mnt);
+#endif
+
+#ifdef __NEW_PATH_CREATE
+		mutex_lock(&newpath.dentry->d_inode->i_mutex);
+		done_path_create(&newpath, new_dentry);
+#else
+exit2:
+		dput(new_dentry);
+		path_put(&newpath);
+#endif
+	}
+exit1:
+	path_put(&oldpath);
+exit:
+	return error;
+}
+EXPORT_SYMBOL_GPL(_provisionary_wrapper_to_vfs_rename);
 
 #endif
 //      end_remove_this
@@ -389,7 +496,11 @@ int mars_rename(const char *oldpath, const char *newpath)
 	
 	oldfs = get_fs();
 	set_fs(get_ds());
+#ifdef __USE_COMPAT
+	status = _provisionary_wrapper_to_vfs_rename(oldpath, newpath);
+#else
 	status = sys_rename(oldpath, newpath);
+#endif
 	set_fs(oldfs);
 
 	return status;
