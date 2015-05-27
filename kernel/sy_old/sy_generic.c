@@ -314,6 +314,47 @@ exit:
 }
 EXPORT_SYMBOL_GPL(_provisionary_wrapper_to_vfs_rename);
 
+/* HACK: provisionary wrapper having some restrictions:
+ *  - standard case, no mountpoints inbetween
+ *  - no full protection against races with concurrent operations
+ *    (they simply don't occur at all because of single-threadedness)
+ *  - no security checks (we are anyway called from kernel code)
+ *
+ * THIS IS NO FINAL SOLUTION!
+ */
+int _provisionary_wrapper_to_vfs_unlink(const char __user *pathname)
+{
+	struct path path;
+	struct dentry *parent;
+	struct inode *inode;
+	int error;
+
+	error = kern_path(pathname, 0, &path);
+	if (unlikely(error))
+		goto exit;
+
+	parent = path.dentry->d_parent;
+	inode = path.dentry->d_inode;
+	ihold(inode);
+
+	error = mnt_want_write(path.mnt);
+	if (error)
+		goto exit1;
+
+#ifdef FL_DELEG
+	error = vfs_unlink(parent->d_inode, path.dentry, NULL);
+#else
+	error = vfs_unlink(parent->d_inode, path.dentry);
+#endif
+	mnt_drop_write(path.mnt);
+exit1:
+	iput(inode);
+
+	path_put(&path);
+exit:
+	return error;
+}
+
 #endif
 //      end_remove_this
 /////////////////////////////////////////////////////////////////////
@@ -381,7 +422,11 @@ int mars_unlink(const char *path)
 	
 	oldfs = get_fs();
 	set_fs(get_ds());
+#ifdef __USE_COMPAT
+	status = _provisionary_wrapper_to_vfs_unlink(path);
+#else
 	status = sys_unlink(path);
+#endif
 	set_fs(oldfs);
 
 	return status;
@@ -426,11 +471,11 @@ int mars_symlink(const char *oldpath, const char *newpath, const struct timespec
 		times[0].tv_nsec = 1;
 	}
 
-	(void)sys_unlink(tmp);
-
 #ifdef __USE_COMPAT
+	(void)_provisionary_wrapper_to_vfs_unlink(tmp);
 	status = _provisionary_wrapper_to_vfs_symlink(oldpath, tmp, &times[0]);
 #else
+	(void)sys_unlink(tmp);
 	status = sys_symlink(oldpath, tmp);
  	if (status >= 0) {
 		memcpy(&times[1], &times[0], sizeof(struct timespec));
