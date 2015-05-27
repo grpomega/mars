@@ -35,7 +35,8 @@
 #ifdef __USE_COMPAT
 
 int _provisionary_wrapper_to_vfs_symlink(const char __user *oldname,
-					 const char __user *newname);
+					 const char __user *newname,
+					 struct timespec *mtime);
 
 int _provisionary_wrapper_to_vfs_mkdir(const char __user *pathname,
 				       int mode);
