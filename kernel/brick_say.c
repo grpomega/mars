@@ -47,6 +47,8 @@
 
 #include <asm/uaccess.h>
 
+#include "provisionary_wrapper.h"
+
 #ifndef GFP_BRICK
 #define GFP_BRICK GFP_NOIO
 #endif
